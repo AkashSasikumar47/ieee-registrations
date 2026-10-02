@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { footerLinks } from "@ieee/ui/content/footer-links";
-import { copyrightLine } from "@ieee/ui/layout/app-footer";
+import { CopyrightBar } from "@/components/copyright-bar";
 import { Wordmark } from "@/components/wordmark";
 import { FOOTER_LINKS } from "@/lib/site";
 
@@ -32,7 +32,7 @@ export function SiteFooter() {
       <div aria-hidden="true" className="@container mt-14 md:mt-20">
         <Wordmark className="-ml-[0.06em] text-[length:calc(100cqw/9.62)]" />
       </div>
-      <p className="mt-6 font-mono text-xs uppercase">{copyrightLine()}</p>
+      <CopyrightBar className="mt-6" />
     </footer>
   );
 }

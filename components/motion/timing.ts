@@ -3,6 +3,7 @@ export const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 export const DURATION = {
   text: 1.1,
   reveal: 1,
+  collapse: 0.5,
 };
 
 export const STAGGER = {
@@ -35,4 +36,10 @@ export const FLAP = {
   tick: 1.1,
   lean: 0.6,
   stretch: 0.012,
+};
+
+export const SHAKE = {
+  path: [0, -8, 8, -6, 6, -3, 3, 0],
+  duration: 0.6,
+  delay: 0.3,
 };

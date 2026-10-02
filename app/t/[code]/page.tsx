@@ -3,10 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CircleCheck, Download } from "lucide-react";
 import { Button } from "@ieee/ui/components/button";
+import { createClient } from "@ieee/supabase/server";
 import { CancelButton } from "@/components/cancel-button";
 import { CopyButton } from "@/components/copy-button";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { TicketCheckIn } from "@/components/ticket-check-in";
+import { getAdmin } from "@/lib/auth";
 import { formatDateRange, formatDayTime } from "@/lib/format";
 import { getOrigin } from "@/lib/origin";
 import { qrSvg, ticketUrl } from "@/lib/qr";
@@ -46,6 +49,16 @@ export default async function TicketPage({
       ? null
       : await qrSvg(ticketUrl(origin, ticket.ticket_code));
   const status = STATUS[ticket.status];
+  const supabase = await createClient();
+  const entry = (await getAdmin(supabase))
+    ? (
+        await supabase
+          .from("ieee_registrations_entries")
+          .select("id, checked_in_at")
+          .eq("ticket_code", ticket.ticket_code)
+          .maybeSingle()
+      ).data
+    : null;
   const team = ticket.team;
   const over = new Date(ticket.event.ends_at) <= new Date();
   const joinUrl = team?.invite_code
@@ -64,6 +77,13 @@ export default async function TicketPage({
       <SiteHeader />
       <main className="flex-1">
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-10 md:px-5 md:py-16">
+          {entry && (
+            <TicketCheckIn
+              entry={entry}
+              confirmed={ticket.status === "confirmed"}
+            />
+          )}
+
           {fresh && ticket.status !== "cancelled" && (
             <div className="flex items-start gap-3">
               <CircleCheck className="mt-1 size-6 shrink-0" />
