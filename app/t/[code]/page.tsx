@@ -5,7 +5,7 @@ import { CircleCheck, Download } from "lucide-react";
 import { Button } from "@ieee/ui/components/button";
 import { CancelButton } from "@/components/cancel-button";
 import { CopyButton } from "@/components/copy-button";
-import { SiteEnd } from "@/components/site-end";
+import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { formatDateRange, formatDayTime } from "@/lib/format";
 import { getOrigin } from "@/lib/origin";
@@ -60,15 +60,15 @@ export default async function TicketPage({
   ];
 
   return (
-    <div className="flex-1">
+    <div className="flex flex-1 flex-col">
       <SiteHeader />
-      <main>
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 py-10 md:px-8 md:py-16">
+      <main className="flex-1">
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-10 md:px-5 md:py-16">
           {fresh && ticket.status !== "cancelled" && (
             <div className="flex items-start gap-3">
               <CircleCheck className="mt-1 size-6 shrink-0" />
               <div className="flex flex-col gap-1">
-                <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+                <h1 className="font-display text-3xl font-black tracking-[-0.04em] uppercase md:text-5xl">
                   {ticket.status === "confirmed"
                     ? "You're registered."
                     : "You're on the waitlist."}
@@ -81,10 +81,10 @@ export default async function TicketPage({
             </div>
           )}
 
-          <article className="grid overflow-hidden rounded-xl border bg-card shadow-sm md:grid-cols-[1fr_auto]">
+          <article className="grid overflow-hidden border bg-card md:grid-cols-[1fr_auto]">
             <div className="flex flex-col gap-8 p-6 md:p-10">
               <div className="flex items-center justify-between gap-4">
-                <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                <span className="font-mono text-xs tracking-wide text-muted-foreground uppercase">
                   IEEE SRMIST · Ticket
                 </span>
                 <span
@@ -94,7 +94,7 @@ export default async function TicketPage({
                 </span>
               </div>
               <div className="flex flex-col gap-2">
-                <h2 className="text-4xl leading-[0.95] font-extrabold tracking-tighter text-balance md:text-5xl">
+                <h2 className="font-display text-4xl leading-[0.9] font-black tracking-[-0.045em] text-balance uppercase md:text-5xl">
                   {ticket.event.name}
                 </h2>
                 <p className="text-muted-foreground">
@@ -111,7 +111,7 @@ export default async function TicketPage({
                     key={detail.label}
                     className="flex flex-col gap-1 border-t py-4"
                   >
-                    <dt className="text-xs text-muted-foreground">
+                    <dt className="font-mono text-xs text-muted-foreground uppercase">
                       {detail.label}
                     </dt>
                     <dd className="font-medium">{detail.value}</dd>
@@ -193,7 +193,7 @@ export default async function TicketPage({
                 </ul>
               </div>
               {joinUrl && team.members.length < ticket.event.team_max && (
-                <div className="flex flex-col justify-between gap-6 rounded-xl border p-6">
+                <div className="flex flex-col justify-between gap-6 border p-6">
                   <div className="flex flex-col gap-2">
                     <span className="text-sm text-muted-foreground">
                       Share this code with your teammates
@@ -219,8 +219,8 @@ export default async function TicketPage({
             with your register number and mobile number.
           </p>
         </div>
-        <SiteEnd />
       </main>
+      <SiteFooter />
     </div>
   );
 }

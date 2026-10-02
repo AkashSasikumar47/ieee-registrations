@@ -1,45 +1,34 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@ieee/ui/components/button";
+import { HeaderNav } from "@/components/header-nav";
 
-const LINKS = [
-  { label: "Events", href: "/#events" },
-  { label: "How it works", href: "/#how-it-works" },
-  { label: "FAQ", href: "/#faq" },
-];
-
-export function SiteHeader() {
+export function SiteHeader({ sticky = true }: { sticky?: boolean }) {
   return (
-    <header className="sticky top-0 z-20 border-b bg-background/90 pt-[env(safe-area-inset-top)] backdrop-blur-sm">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-6 px-4 py-3 md:px-8">
-        <Link href="/" className="flex items-center gap-3">
-          <Image
-            src="/logos/ieee-srmist-logo.png"
-            alt=""
-            width={32}
-            height={32}
-            priority
-          />
-          <span className="flex flex-col leading-tight">
-            <span className="text-sm font-semibold">IEEE SRMIST</span>
-            <span className="text-xs text-muted-foreground">Registrations</span>
-          </span>
-        </Link>
-        <nav className="hidden items-center gap-8 md:flex">
-          {LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-        <Button variant="outline" asChild>
-          <Link href="/find">Find my ticket</Link>
-        </Button>
-      </div>
+    <header
+      className={`z-30 flex items-center justify-between gap-6 bg-background px-4 pt-[max(0.875rem,env(safe-area-inset-top))] pb-3.5 md:grid md:grid-cols-[1.4fr_repeat(5,1fr)_auto] md:px-5 ${
+        sticky ? "sticky top-0 border-b" : ""
+      }`}
+    >
+      <Link
+        href="/"
+        className="font-mono text-sm font-semibold tracking-wide uppercase"
+      >
+        IEEE SRMIST
+      </Link>
+      <HeaderNav />
+      <a
+        href="https://ieeesrmist.com"
+        aria-label="IEEE SRMIST"
+        className="justify-self-end"
+      >
+        <Image
+          src="/logos/ieee-srmist-logo.png"
+          alt="IEEE SRMIST"
+          width={32}
+          height={32}
+          preload
+        />
+      </a>
     </header>
   );
 }

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { EventCover } from "@/components/event-cover";
+import { EventPoster } from "@/components/event-poster";
 import { RegisterPanel } from "@/components/register-panel";
 import { SeatsBar } from "@/components/seats-bar";
-import { SiteEnd } from "@/components/site-end";
+import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getPhase, parseFields } from "@/lib/events";
 import { formatDateRange, formatDayTime } from "@/lib/format";
@@ -49,21 +49,23 @@ export default async function EventPage({
   ];
 
   return (
-    <div className="flex-1">
+    <div className="flex flex-1 flex-col">
       <SiteHeader />
-      <main>
-        <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-10 md:px-8 md:py-16 lg:grid-cols-[1fr_1.15fr] lg:gap-16">
+      <main className="flex-1">
+        <div className="grid w-full gap-10 px-4 py-10 md:px-5 md:py-16 lg:grid-cols-[1fr_1.15fr] lg:gap-16">
           <aside className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
-            <EventCover event={event} className="aspect-[16/9]" />
+            <div className="aspect-[16/9]">
+              <EventPoster name={event.name} mode={event.mode} />
+            </div>
             <div className="flex flex-col gap-3">
-              <p className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+              <p className="font-mono text-xs tracking-wide text-muted-foreground uppercase">
                 {phase === "open"
                   ? daysLeft(event.closes_at)
                   : phase === "upcoming"
                     ? "Opening soon"
                     : "Registrations closed"}
               </p>
-              <h1 className="text-4xl leading-[0.95] font-extrabold tracking-tighter text-balance md:text-5xl">
+              <h1 className="font-display text-4xl leading-[0.9] font-black tracking-[-0.045em] text-balance uppercase md:text-6xl">
                 {event.name}
               </h1>
               {event.summary && (
@@ -78,7 +80,7 @@ export default async function EventPage({
                   key={detail.label}
                   className="flex flex-col gap-1 border-t py-4"
                 >
-                  <dt className="text-xs text-muted-foreground">
+                  <dt className="font-mono text-xs text-muted-foreground uppercase">
                     {detail.label}
                   </dt>
                   <dd className="text-sm font-medium">{detail.value}</dd>
@@ -88,9 +90,9 @@ export default async function EventPage({
             {phase === "open" && <SeatsBar event={event} taken={taken} />}
           </aside>
 
-          <section className="flex flex-col gap-6 rounded-xl border bg-card p-6 shadow-sm md:p-10">
+          <section className="flex flex-col gap-6 border bg-card p-6 md:p-10">
             <div className="flex flex-col gap-1">
-              <h2 className="text-2xl font-bold tracking-tight">
+              <h2 className="font-display text-2xl font-black tracking-[-0.03em] uppercase">
                 {team ? "Register your team" : "Register"}
               </h2>
               <p className="text-sm text-muted-foreground">
@@ -107,7 +109,7 @@ export default async function EventPage({
                 inviteCode={typeof code === "string" ? code.toUpperCase() : ""}
               />
             ) : (
-              <p className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">
+              <p className="border border-dashed p-6 text-sm text-muted-foreground">
                 {phase === "upcoming"
                   ? `Registrations open ${formatDayTime(event.opens_at)}. Come back then.`
                   : "Registrations for this event have closed."}
@@ -115,8 +117,8 @@ export default async function EventPage({
             )}
           </section>
         </div>
-        <SiteEnd />
       </main>
+      <SiteFooter />
     </div>
   );
 }

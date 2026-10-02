@@ -28,3 +28,13 @@ export function formatDateRange(start: string, end: string) {
   const to = formatDay(end);
   return from === to ? from : `${from} – ${to}`;
 }
+
+const SHORT_DAY = new Intl.DateTimeFormat("en-IN", {
+  timeZone: TIME_ZONE,
+  day: "numeric",
+  month: "short",
+});
+
+export function formatShortDay(value: string) {
+  return SHORT_DAY.format(new Date(value));
+}

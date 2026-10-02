@@ -12,7 +12,9 @@
   "dependencies": {
     "@ieee/supabase": "workspace:*",
     "@ieee/ui": "workspace:*",
+    "lenis": "catalog:",
     "lucide-react": "catalog:",
+    "motion": "catalog:",
     "next": "catalog:",
     "qrcode": "catalog:",
     "react": "catalog:",

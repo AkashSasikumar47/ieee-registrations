@@ -1,41 +1,45 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { Button } from "@ieee/ui/components/button";
-import { Card, CardContent, CardFooter } from "@ieee/ui/components/card";
-import { EventCover } from "@/components/event-cover";
+import { ArrowUpRight } from "lucide-react";
+import { EventPoster, posterName } from "@/components/event-poster";
 import { SeatsBar } from "@/components/seats-bar";
-import type { Event } from "@/lib/events";
-import { formatDateRange, formatDayTime } from "@/lib/format";
+import { getPhase, type Event } from "@/lib/events";
+import { formatDateRange } from "@/lib/format";
+import { toStripItems } from "@/lib/strip";
 
-export function EventCard({ event, taken }: { event: Event; taken: number }) {
+export function EventCard({
+  event,
+  taken,
+  tone,
+}: {
+  event: Event;
+  taken: number;
+  tone: number;
+}) {
+  const [item] = toStripItems([event]);
+  const open = getPhase(event) === "open";
+
   return (
-    <Card className="gap-5 pt-0">
-      <Link href={`/${event.slug}`} aria-label={event.name}>
-        <EventCover
-          event={event}
-          className="aspect-[16/10] rounded-b-none border-0 border-b"
-        />
-      </Link>
-      <CardContent className="flex flex-col gap-4">
-        <div className="flex flex-col gap-1">
-          <h3 className="text-lg font-semibold">{event.name}</h3>
-          <p className="text-sm text-muted-foreground">
-            {formatDateRange(event.starts_at, event.ends_at)}
-            {event.venue && ` · ${event.venue}`}
-          </p>
-        </div>
-        <SeatsBar event={event} taken={taken} />
-      </CardContent>
-      <CardFooter className="mt-auto justify-between gap-4">
-        <span className="text-xs text-muted-foreground">
-          Closes {formatDayTime(event.closes_at)}
+    <Link
+      href={`/${event.slug}`}
+      className="group flex flex-col gap-3 border-t pt-3"
+    >
+      <span className="block aspect-[4/5] overflow-hidden">
+        <span className="block size-full transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105">
+          <EventPoster name={event.name} mode={event.mode} tone={tone} />
         </span>
-        <Button asChild>
-          <Link href={`/${event.slug}`}>
-            Register <ArrowRight />
-          </Link>
-        </Button>
-      </CardFooter>
-    </Card>
+      </span>
+      <span className="flex items-start justify-between gap-3 font-mono text-xs uppercase">
+        <span className="flex flex-col">
+          <span className="font-semibold">{posterName(event.name)}</span>
+          <span className="text-muted-foreground">{item?.status}</span>
+        </span>
+        <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />
+      </span>
+      <span className="font-mono text-xs text-muted-foreground uppercase">
+        {formatDateRange(event.starts_at, event.ends_at)}
+        {event.venue && ` · ${event.venue}`}
+      </span>
+      {open ? <SeatsBar event={event} taken={taken} /> : null}
+    </Link>
   );
 }
