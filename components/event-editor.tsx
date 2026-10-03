@@ -97,7 +97,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="grid gap-6 border-b px-4 py-10 md:grid-cols-4 md:gap-3 md:px-5 md:py-12">
+    <section className="grid gap-6 border-b px-site-4 py-10 md:grid-cols-4 md:gap-3 md:px-site-5 md:py-12">
       <div className="flex flex-col gap-2">
         <p className="font-mono text-xs uppercase">
           [{String(index).padStart(2, "0")}] {title}
@@ -356,7 +356,7 @@ export function EventEditor({
         </Section>
       )}
 
-      <div className="sticky bottom-0 z-20 flex flex-col gap-3 border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:px-5">
+      <div className="sticky bottom-0 z-20 flex flex-col gap-3 border-t bg-background px-site-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:px-site-5">
         <Collapse show={error !== ""}>
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>

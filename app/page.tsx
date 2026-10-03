@@ -16,7 +16,7 @@ export default async function HomePage() {
         <EventStrip items={toStripItems(events ?? [])} />
         <div
           aria-hidden="true"
-          className="@container px-4 pt-6 md:px-5 md:pt-8"
+          className="@container px-site-4 pt-6 md:px-site-5 md:pt-8"
         >
           <FlapWordmark className="font-display -ml-[0.06em] flex flex-col text-[length:calc(100cqw/7.67)] leading-[0.8] font-black tracking-[-0.055em] whitespace-nowrap uppercase md:flex-row md:gap-[0.14em] md:text-[length:calc(100cqw/9.83)] md:leading-[0.78]" />
         </div>

@@ -52,7 +52,7 @@ export default async function EventPage({
     <div className="flex flex-1 flex-col">
       <SiteHeader />
       <main className="flex-1">
-        <div className="grid w-full gap-10 px-4 py-10 md:px-5 md:py-16 lg:grid-cols-[1fr_1.15fr] lg:gap-16">
+        <div className="grid w-full gap-10 px-site-4 py-10 md:px-site-5 md:py-16 lg:grid-cols-[1fr_1.15fr] lg:gap-16">
           <aside className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
             <div className="aspect-[16/9]">
               <EventPoster name={event.name} mode={event.mode} />

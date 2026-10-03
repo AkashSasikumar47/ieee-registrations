@@ -23,7 +23,7 @@ export default function FaqPage() {
           title="Questions, answered"
           lead="Everything about registering, teams, waitlists and tickets."
         />
-        <div className="grid gap-6 px-4 py-10 md:grid-cols-4 md:gap-3 md:px-5 md:py-14">
+        <div className="grid gap-6 px-site-4 py-10 md:grid-cols-4 md:gap-3 md:px-site-5 md:py-14">
           <p className="font-mono text-xs uppercase">{FAQS.length} questions</p>
           <Reveal className="md:col-span-3">
             <Accordion

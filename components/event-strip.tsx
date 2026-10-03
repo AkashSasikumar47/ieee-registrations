@@ -23,7 +23,7 @@ const HEIGHTS = [
   "h-[80cqh]",
 ];
 
-const MIN_CARDS = 9;
+const MIN_CARDS = 12;
 
 export function EventStrip({ items }: { items: StripItem[] }) {
   const viewport = useRef<HTMLDivElement>(null);
@@ -120,7 +120,7 @@ export function EventStrip({ items }: { items: StripItem[] }) {
 
   if (!cards.length) {
     return (
-      <div className="flex min-h-0 flex-1 items-center px-4 font-mono text-sm text-muted-foreground uppercase md:px-5">
+      <div className="flex min-h-0 flex-1 items-center px-site-4 font-mono text-sm text-muted-foreground uppercase md:px-site-5">
         No events yet. Check back soon.
       </div>
     );
@@ -129,7 +129,7 @@ export function EventStrip({ items }: { items: StripItem[] }) {
   return (
     <motion.div
       ref={viewport}
-      className="[container-type:size] relative min-h-0 flex-1 cursor-grab touch-pan-y overflow-hidden select-none active:cursor-grabbing"
+      className="[container-type:size] relative mx-site-0 min-h-0 flex-1 cursor-grab touch-pan-y overflow-hidden select-none active:cursor-grabbing"
       onPointerDown={down}
       onPointerMove={move}
       onPointerUp={up}

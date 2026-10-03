@@ -20,7 +20,7 @@ export default function HowItWorksPage() {
           title="Three steps to your seat"
           lead="No accounts and no waiting. Register, and your ticket is ready the moment you finish."
         />
-        <ol className="grid border-b md:grid-cols-3">
+        <ol className="grid border-b px-site-0 md:grid-cols-3">
           {STEPS.map((step, index) => (
             <Reveal
               as="li"
@@ -42,7 +42,7 @@ export default function HowItWorksPage() {
             </Reveal>
           ))}
         </ol>
-        <div className="flex flex-wrap gap-3 px-4 py-10 md:px-5 md:py-14">
+        <div className="flex flex-wrap gap-3 px-site-4 py-10 md:px-site-5 md:py-14">
           <Button size="lg" asChild>
             <Link href="/events">
               Browse events <ArrowRight />

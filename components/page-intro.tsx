@@ -11,7 +11,7 @@ export function PageIntro({
   lead?: string;
 }) {
   return (
-    <div className="flex flex-col gap-6 border-b px-4 pt-12 pb-10 md:px-5 md:pt-20 md:pb-14">
+    <div className="flex flex-col gap-6 border-b px-site-4 pt-12 pb-10 md:px-site-5 md:pt-20 md:pb-14">
       <Reveal
         as="p"
         trigger="mount"

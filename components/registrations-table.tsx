@@ -64,7 +64,7 @@ export function RegistrationsTable({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-3 px-4 sm:flex-row md:px-5">
+      <div className="flex flex-col gap-3 px-site-4 sm:flex-row md:px-site-5">
         <Input
           type="search"
           aria-label="Search registrations"

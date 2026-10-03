@@ -53,7 +53,7 @@ export default async function RegistrationsPage({
             <Link href={`/admin/events/${event.id}`}>Edit</Link>
           </Button>
         </AdminIntro>
-        <dl className="grid grid-cols-2 gap-3 px-4 py-8 md:grid-cols-4 md:px-5">
+        <dl className="grid grid-cols-2 gap-3 px-site-4 py-8 md:grid-cols-4 md:px-site-5">
           {stats.map((stat) => (
             <div key={stat.label} className="flex flex-col gap-1 border-t pt-3">
               <dt className="font-mono text-xs text-muted-foreground uppercase">

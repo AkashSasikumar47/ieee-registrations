@@ -17,12 +17,12 @@ export default function AboutPage() {
           title={ABOUT_IEEE.title}
           lead={ABOUT_IEEE.statement}
         />
-        <div className="px-4 py-10 md:px-5 md:py-14">
+        <div className="px-site-4 py-10 md:px-site-5 md:py-14">
           <Reveal className="flex aspect-[4/3] items-end bg-muted bg-[radial-gradient(circle,var(--border)_1px,transparent_1px)] bg-size-[14px_14px] p-4 font-mono text-xs text-muted-foreground uppercase md:aspect-[16/7]">
             IEEE SRMIST team photo
           </Reveal>
         </div>
-        <ul className="grid border-t md:grid-cols-3">
+        <ul className="grid border-t px-site-0 md:grid-cols-3">
           {ABOUT_IEEE.points.map((point, index) => (
             <Reveal
               as="li"

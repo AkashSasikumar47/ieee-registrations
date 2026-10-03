@@ -33,7 +33,7 @@ export function AdminEventRow({
       as="li"
       delay={Math.min(index, 6) * 0.06}
       y={16}
-      className="grid gap-5 border-b px-4 py-6 md:grid-cols-4 md:gap-3 md:px-5 md:py-8"
+      className="grid gap-5 border-b px-site-4 py-6 md:grid-cols-4 md:gap-3 md:px-site-5 md:py-8"
     >
       <div className="flex flex-wrap items-center gap-2 font-mono text-xs uppercase">
         <span
