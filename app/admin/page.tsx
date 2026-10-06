@@ -40,7 +40,7 @@ export default async function AdminPage() {
           </Button>
         </AdminIntro>
         {events.length === 0 ? (
-          <p className="px-site-4 py-16 font-mono text-sm text-muted-foreground uppercase md:px-site-5">
+          <p className="px-gutter py-16 font-mono text-sm text-muted-foreground uppercase">
             No events yet. Create the first one.
           </p>
         ) : (

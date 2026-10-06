@@ -25,7 +25,7 @@ export default async function LoginPage({
           title="Sign in"
           lead="Admins only. Everyone else can head back to the events."
         />
-        <div className="grid gap-6 px-site-4 py-10 md:grid-cols-4 md:gap-3 md:px-site-5 md:py-14">
+        <div className="grid gap-6 px-gutter py-10 md:grid-cols-4 md:gap-3 md:py-14">
           <p className="font-mono text-xs uppercase">Account</p>
           <Reveal trigger="mount" delay={0.2} y={16} className="md:col-span-2">
             <LoginForm

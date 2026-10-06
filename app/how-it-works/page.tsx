@@ -42,7 +42,7 @@ export default function HowItWorksPage() {
             </Reveal>
           ))}
         </ol>
-        <div className="flex flex-wrap gap-3 px-site-4 py-10 md:px-site-5 md:py-14">
+        <div className="flex flex-wrap gap-3 px-gutter py-10 md:py-14">
           <Button size="lg" asChild>
             <Link href="/events">
               Browse events <ArrowRight />

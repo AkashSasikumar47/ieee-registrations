@@ -76,7 +76,7 @@ export default async function TicketPage({
     <div className="flex flex-1 flex-col">
       <SiteHeader />
       <main className="flex-1">
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-site-4 py-10 md:px-site-5 md:py-16">
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-gutter py-10 md:py-16">
           {entry && (
             <TicketCheckIn
               entry={entry}

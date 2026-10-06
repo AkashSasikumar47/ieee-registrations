@@ -11,7 +11,7 @@ export function HomeBar() {
       trigger="mount"
       delay={INTRO.bar}
       y={10}
-      className="grid gap-4 px-site-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] font-mono text-[0.7rem] leading-snug uppercase md:grid-cols-[1fr_2fr_1fr] md:items-end md:gap-6 md:px-site-5 md:pb-5 md:text-xs"
+      className="grid gap-4 px-gutter pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] font-mono text-[0.7rem] leading-snug uppercase md:grid-cols-[1fr_2fr_1fr] md:items-end md:gap-6 md:pb-5 md:text-xs"
     >
       <div className="order-3 flex justify-between gap-4 md:order-1">
         <p>{copyrightLine()}</p>

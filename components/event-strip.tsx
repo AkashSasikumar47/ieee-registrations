@@ -120,7 +120,7 @@ export function EventStrip({ items }: { items: StripItem[] }) {
 
   if (!cards.length) {
     return (
-      <div className="flex min-h-0 flex-1 items-center px-site-4 font-mono text-sm text-muted-foreground uppercase md:px-site-5">
+      <div className="flex min-h-0 flex-1 items-center px-gutter font-mono text-sm text-muted-foreground uppercase">
         No events yet. Check back soon.
       </div>
     );

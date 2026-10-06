@@ -5,7 +5,7 @@ import { HeaderNav } from "@/components/header-nav";
 export function SiteHeader({ sticky = true }: { sticky?: boolean }) {
   return (
     <header
-      className={`z-30 flex items-center justify-between gap-6 bg-background px-site-4 pt-[max(0.875rem,env(safe-area-inset-top))] pb-3.5 md:grid md:grid-cols-[1.4fr_repeat(5,1fr)_auto] md:px-site-5 ${
+      className={`z-30 flex items-center justify-between gap-6 bg-background px-gutter pt-[max(0.875rem,env(safe-area-inset-top))] pb-3.5 md:grid md:grid-cols-[1.4fr_repeat(5,1fr)_auto] ${
         sticky ? "sticky top-0 border-b" : ""
       }`}
     >

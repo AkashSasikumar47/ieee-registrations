@@ -30,7 +30,7 @@ export function CheckInList({ entries }: { entries: AdminEntry[] }) {
 
   return (
     <div className="flex flex-col">
-      <div className="flex flex-col gap-4 border-b px-site-4 py-6 md:px-site-5">
+      <div className="flex flex-col gap-4 border-b px-gutter py-6">
         <div className="flex items-end justify-between gap-4">
           <p className="font-display text-5xl leading-none font-black tracking-[-0.05em] tabular-nums md:text-6xl">
             {arrived}
@@ -66,7 +66,7 @@ export function CheckInList({ entries }: { entries: AdminEntry[] }) {
         )}
       </div>
       {shown.length === 0 ? (
-        <p className="px-site-4 py-12 font-mono text-xs text-muted-foreground uppercase md:px-site-5">
+        <p className="px-gutter py-12 font-mono text-xs text-muted-foreground uppercase">
           {confirmed.length === 0
             ? "No confirmed registrations yet."
             : "Nobody matches that search."}
@@ -78,7 +78,7 @@ export function CheckInList({ entries }: { entries: AdminEntry[] }) {
             return (
               <li
                 key={entry.id}
-                className={`flex items-center justify-between gap-4 border-b px-site-4 py-4 md:px-site-5 ${at ? "bg-muted" : ""}`}
+                className={`flex items-center justify-between gap-4 border-b px-gutter py-4 ${at ? "bg-muted" : ""}`}
               >
                 <div className="flex min-w-0 flex-col gap-1">
                   <span className="truncate text-lg font-semibold">

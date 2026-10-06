@@ -13,7 +13,7 @@ export function AdminIntro({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-6 border-b px-site-4 pt-10 pb-8 md:flex-row md:items-end md:justify-between md:px-site-5 md:pt-14 md:pb-10">
+    <div className="flex flex-col gap-6 border-b px-gutter pt-10 pb-8 md:flex-row md:items-end md:justify-between md:pt-14 md:pb-10">
       <div className="flex min-w-0 flex-col gap-4">
         <Reveal
           as="p"
