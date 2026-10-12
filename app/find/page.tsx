@@ -23,7 +23,7 @@ export default async function FindPage() {
           title="Lost your ticket? Get it back"
           lead="Enter the event and the details you registered with. We'll take you straight to your ticket page."
         />
-        <div className="grid gap-6 px-gutter py-10 md:grid-cols-4 md:gap-3 md:py-14">
+        <div className="grid gap-6 px-gutter py-7 md:grid-cols-4 md:gap-3 md:py-9">
           <p className="font-mono text-xs uppercase">Your details</p>
           <div className="border p-6 md:col-span-2 md:p-8">
             {events && events.length > 0 ? (

@@ -15,7 +15,7 @@ const DAY_TIME = new Intl.DateTimeFormat("en-IN", {
   minute: "2-digit",
 });
 
-export function formatDay(value: string) {
+function formatDay(value: string) {
   return DAY.format(new Date(value));
 }
 
@@ -37,4 +37,14 @@ const SHORT_DAY = new Intl.DateTimeFormat("en-IN", {
 
 export function formatShortDay(value: string) {
   return SHORT_DAY.format(new Date(value));
+}
+
+const MONTH = new Intl.DateTimeFormat("en-IN", {
+  timeZone: TIME_ZONE,
+  month: "short",
+  year: "numeric",
+});
+
+export function formatMonth(value: string) {
+  return MONTH.format(new Date(value));
 }

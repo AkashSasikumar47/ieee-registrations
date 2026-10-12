@@ -24,7 +24,7 @@ export default async function CheckInPage({
         <AdminIntro
           label={`Check-in · /${event.slug}`}
           title={event.name}
-          lead="Scan a ticket's QR code with your camera, or search below."
+          lead="Scan tickets with this device's camera, or search by name."
         >
           <Button variant="outline" className="font-mono uppercase" asChild>
             <Link href={`/admin/events/${event.id}/registrations`}>

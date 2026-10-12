@@ -17,8 +17,8 @@ export default function AboutPage() {
           title={ABOUT_IEEE.title}
           lead={ABOUT_IEEE.statement}
         />
-        <div className="px-gutter py-10 md:py-14">
-          <Reveal className="flex aspect-[4/3] items-end bg-muted bg-[radial-gradient(circle,var(--border)_1px,transparent_1px)] bg-size-[14px_14px] p-4 font-mono text-xs text-muted-foreground uppercase md:aspect-[16/7]">
+        <div className="px-gutter py-7 md:py-9">
+          <Reveal className="flex aspect-[4/3] items-end bg-muted bg-[radial-gradient(circle,var(--border)_1px,transparent_1px)] bg-size-[14px_14px] p-4 font-mono text-xs text-muted-foreground uppercase md:aspect-[16/5]">
             IEEE SRMIST team photo
           </Reveal>
         </div>
@@ -28,7 +28,7 @@ export default function AboutPage() {
               as="li"
               key={point.title}
               delay={index * 0.1}
-              className="flex flex-col gap-3 border-b px-4 py-8 md:border-r md:px-5 md:py-10 md:last:border-r-0"
+              className="flex flex-col gap-3 border-b px-4 py-8 md:border-r md:px-5 md:py-8 md:last:border-r-0"
             >
               <h2 className="font-mono text-sm font-semibold uppercase">
                 {point.title}

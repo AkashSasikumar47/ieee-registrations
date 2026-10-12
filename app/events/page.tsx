@@ -26,7 +26,7 @@ export default async function EventsPage() {
         <PageIntro
           label="Events"
           title="Every event, one place"
-          lead="Hackathons, workshops and ideathons from IEEE SRMIST. Pick one to see the details and register."
+          lead="Hackathons, workshops, ideathons, talks and fests from IEEE SRMIST. Pick one to see the details, and register while it is open."
         />
         {all.length === 0 ? (
           <p className="px-gutter py-16 font-mono text-sm text-muted-foreground uppercase">
@@ -37,11 +37,12 @@ export default async function EventsPage() {
             const list = all.filter((event) =>
               group.phases.includes(getPhase(event)),
             );
+            if (group.label === "Past") list.reverse();
             if (!list.length) return null;
             return (
               <section
                 key={group.label}
-                className="grid gap-6 border-b px-gutter py-10 md:grid-cols-4 md:gap-3 md:py-14"
+                className="grid gap-6 border-b px-gutter py-7 md:grid-cols-4 md:gap-3 md:py-9"
               >
                 <p className="font-mono text-xs uppercase">
                   {group.label} ({list.length})
@@ -52,7 +53,6 @@ export default async function EventsPage() {
                       <EventCard
                         event={event}
                         taken={taken.get(event.id) ?? 0}
-                        tone={all.indexOf(event)}
                       />
                     </Reveal>
                   ))}

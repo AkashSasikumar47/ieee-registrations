@@ -3,13 +3,16 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, useAnimationFrame, useReducedMotion } from "motion/react";
-import { EventPoster, posterName } from "@/components/event-poster";
+import { EventPoster } from "@/components/event-poster";
 import { DURATION, EASE_OUT, INTRO, STRIP } from "@/components/motion/timing";
+import { KIND_LABELS } from "@/lib/events";
 
 export type StripItem = {
   slug: string;
   name: string;
-  mode: string;
+  kind: string;
+  accent: string;
+  backdrop: string;
   status: string;
 };
 
@@ -45,6 +48,15 @@ export function EventStrip({ items }: { items: StripItem[] }) {
       )
     : [];
   const loop = [...cards, ...cards];
+
+  useEffect(() => {
+    const first = track.current?.firstElementChild;
+    const width = viewport.current?.clientWidth;
+    if (!(first instanceof HTMLElement) || !width) return;
+    const start = first.offsetLeft + first.offsetWidth / 2 - width / 2;
+    motionState.current.target = start;
+    motionState.current.current = start;
+  }, []);
 
   useEffect(() => {
     const state = motionState.current;
@@ -100,7 +112,6 @@ export function EventStrip({ items }: { items: StripItem[] }) {
     state.lastX = event.clientX;
     state.moved = 0;
     state.velocity = 0;
-    event.currentTarget.setPointerCapture(event.pointerId);
   };
 
   const move = (event: React.PointerEvent) => {
@@ -109,13 +120,21 @@ export function EventStrip({ items }: { items: StripItem[] }) {
     const dx = event.clientX - state.lastX;
     state.lastX = event.clientX;
     state.moved += Math.abs(dx);
+    if (
+      state.moved > STRIP.tap &&
+      !event.currentTarget.hasPointerCapture(event.pointerId)
+    ) {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
     state.target -= dx * STRIP.drag;
     state.velocity = -dx * STRIP.drag;
   };
 
   const up = (event: React.PointerEvent) => {
     motionState.current.dragging = false;
-    event.currentTarget.releasePointerCapture(event.pointerId);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
   };
 
   if (!cards.length) {
@@ -166,14 +185,16 @@ export function EventStrip({ items }: { items: StripItem[] }) {
             >
               <span className="block size-full [transform:translateX(var(--shift,0%))_scale(1.06)] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:[transform:translateX(var(--shift,0%))_scale(1.12)]">
                 <EventPoster
+                  seed={item.slug}
                   name={item.name}
-                  mode={item.mode}
-                  tone={index % items.length}
+                  label={KIND_LABELS[item.kind] ?? item.kind}
+                  accent={item.accent}
+                  backdrop={item.backdrop}
                 />
               </span>
             </span>
             <span className="flex flex-col font-mono text-[0.7rem] leading-tight uppercase md:text-xs">
-              <span className="font-semibold">{posterName(item.name)}</span>
+              <span className="font-semibold">{item.name}</span>
               <span className="text-muted-foreground">{item.status}</span>
             </span>
           </Link>

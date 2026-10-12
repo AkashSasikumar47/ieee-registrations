@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Check } from "lucide-react";
+import { Check, ScanLine, X } from "lucide-react";
 import { motion } from "motion/react";
 import { Alert, AlertDescription } from "@ieee/ui/components/alert";
 import { Button } from "@ieee/ui/components/button";
 import { Input } from "@ieee/ui/components/input";
+import { Collapse } from "@/components/motion/collapse";
 import { DURATION, EASE_OUT } from "@/components/motion/timing";
+import { TicketScanner } from "@/components/ticket-scanner";
 import { useCheckIn } from "@/components/use-check-in";
 import type { AdminEntry } from "@/lib/admin-entries";
 import { formatDayTime } from "@/lib/format";
@@ -14,6 +16,34 @@ import { formatDayTime } from "@/lib/format";
 export function CheckInList({ entries }: { entries: AdminEntry[] }) {
   const { checkedInAt, toggle, pending, error } = useCheckIn();
   const [query, setQuery] = useState("");
+  const [scanning, setScanning] = useState(false);
+  const [scan, setScan] = useState<{ ok: boolean; text: string } | null>(null);
+
+  async function scanned(code: string) {
+    const entry = entries.find((item) => item.ticket_code === code);
+    if (!entry) {
+      setScan({ ok: false, text: "This ticket isn't for this event." });
+      return;
+    }
+    if (entry.status !== "confirmed") {
+      setScan({ ok: false, text: `${entry.name} is ${entry.status}.` });
+      return;
+    }
+    const at = checkedInAt(entry);
+    if (at) {
+      setScan({
+        ok: false,
+        text: `${entry.name} already checked in at ${formatDayTime(at)}.`,
+      });
+      return;
+    }
+    const done = await toggle(entry);
+    setScan(
+      done
+        ? { ok: true, text: `Checked in: ${entry.name}` }
+        : { ok: false, text: `Couldn't check in ${entry.name}. Try again.` },
+    );
+  }
   const confirmed = entries.filter((entry) => entry.status === "confirmed");
   const arrived = confirmed.filter((entry) => checkedInAt(entry)).length;
   const search = query.trim().toLowerCase();
@@ -50,9 +80,37 @@ export function CheckInList({ entries }: { entries: AdminEntry[] }) {
             transition={{ duration: DURATION.collapse, ease: EASE_OUT }}
           />
         </div>
+        <div className="flex flex-col gap-3">
+          <Button
+            variant={scanning ? "outline" : "default"}
+            size="lg"
+            className="self-start font-mono uppercase"
+            onClick={() => {
+              setScanning((on) => !on);
+              setScan(null);
+            }}
+          >
+            {scanning ? (
+              <>
+                <X /> Close camera
+              </>
+            ) : (
+              <>
+                <ScanLine /> Scan tickets
+              </>
+            )}
+          </Button>
+          {scanning && <TicketScanner onCode={scanned} />}
+          <Collapse show={scan !== null}>
+            <Alert variant={scan?.ok ? "default" : "destructive"}>
+              <AlertDescription className="text-base font-semibold">
+                {scan?.text}
+              </AlertDescription>
+            </Alert>
+          </Collapse>
+        </div>
         <Input
           type="search"
-          autoFocus
           aria-label="Search"
           placeholder="Name, register number, team or ticket code"
           value={query}

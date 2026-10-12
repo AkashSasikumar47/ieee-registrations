@@ -69,7 +69,6 @@ export default async function RegistrationsPage({
           <RegistrationsTable
             entries={entries}
             fields={parseFields(event.fields)}
-            over={new Date(event.ends_at) <= new Date()}
           />
         </div>
       </main>

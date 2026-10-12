@@ -1,13 +1,29 @@
 import type { TablesInsert } from "@ieee/supabase/types";
-import { FIELD_TYPES, type Field, type FieldType } from "@/lib/events";
+import {
+  FIELD_TYPES,
+  KIND_LABELS,
+  type Field,
+  type FieldType,
+} from "@/lib/events";
 
-export type EventInput = Omit<
+type EventInput = Omit<
   TablesInsert<"ieee_registrations_events">,
   "id" | "created_at" | "updated_at"
 >;
 
-export const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
-export const FIELD_KEY = /^[a-z0-9_]{1,40}$/;
+const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+const COLOUR = /^#[0-9a-f]{6}$/;
+const RESERVED = [
+  "about",
+  "admin",
+  "api",
+  "events",
+  "faq",
+  "find",
+  "how-it-works",
+  "t",
+];
+const FIELD_KEY = /^[a-z0-9_]{1,40}$/;
 
 function text(value: unknown, max: number) {
   return typeof value === "string" && value.trim().length <= max
@@ -45,7 +61,7 @@ function readFields(value: unknown): Field[] | string {
       type: type as FieldType,
       required: required === true,
     };
-    if (type === "select") {
+    if (type === "select" || type === "multiselect") {
       const list = Array.isArray(options)
         ? options
             .map((option) => text(option, 80))
@@ -73,20 +89,49 @@ export function readEventInput(
     };
   }
   const summary = text(body.summary, 1000);
+  const about = text(body.about, 5000);
   const venue = text(body.venue, 200);
-  if (summary === null || venue === null) {
-    return { error: "The summary or venue is too long." };
+  if (summary === null || about === null || venue === null) {
+    return { error: "The summary, description or venue is too long." };
+  }
+  if (RESERVED.includes(slug)) {
+    return { error: "That link is used by a page on this site. Pick another." };
+  }
+
+  const kind =
+    typeof body.kind === "string" && body.kind in KIND_LABELS
+      ? (body.kind as string)
+      : null;
+  const format = body.format === "online" ? "online" : "campus";
+  if (!kind) return { error: "Pick what kind of event this is." };
+
+  const accent = text(body.accent, 7);
+  const backdrop = text(body.backdrop, 7);
+  if (
+    accent === null ||
+    backdrop === null ||
+    (accent && !COLOUR.test(accent)) ||
+    (backdrop && !COLOUR.test(backdrop)) ||
+    (backdrop && !accent)
+  ) {
+    return { error: "Colours must be hex values like #e85a16, colour first." };
+  }
+
+  const website = text(body.website, 200);
+  if (website === null || (website && !/^https:\/\//.test(website))) {
+    return { error: "The website must be a full https:// link." };
   }
 
   const starts_at = time(body.starts_at);
   const ends_at = time(body.ends_at);
-  const opens_at = time(body.opens_at);
-  const closes_at = time(body.closes_at);
-  if (!starts_at || !ends_at || !opens_at || !closes_at) {
+  const registers = body.registers !== false;
+  const opens_at = registers ? time(body.opens_at) : null;
+  const closes_at = registers ? time(body.closes_at) : null;
+  if (!starts_at || !ends_at || (registers && (!opens_at || !closes_at))) {
     return { error: "Fill in every date and time." };
   }
   if (ends_at < starts_at) return { error: "The event ends before it starts." };
-  if (closes_at <= opens_at) {
+  if (opens_at && closes_at && closes_at <= opens_at) {
     return { error: "Registrations must close after they open." };
   }
 
@@ -121,7 +166,13 @@ export function readEventInput(
       name,
       slug,
       summary,
-      venue,
+      about,
+      kind,
+      format,
+      website,
+      accent,
+      backdrop,
+      venue: format === "online" ? "" : venue,
       starts_at,
       ends_at,
       opens_at,

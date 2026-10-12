@@ -4,12 +4,12 @@ export const INPUT_PATTERNS = {
   phone: "[6-9][0-9]{9}",
 };
 
-export type Participant = {
+type Participant = {
   name: string;
   email: string;
   register_number: string;
   phone: string;
-  answers: Record<string, string>;
+  answers: Record<string, string | string[]>;
 };
 
 function text(value: unknown, max: number) {
@@ -17,10 +17,16 @@ function text(value: unknown, max: number) {
 }
 
 export function readParticipant(body: Record<string, unknown>): Participant {
-  const answers: Record<string, string> = {};
+  const answers: Record<string, string | string[]> = {};
   if (typeof body.answers === "object" && body.answers !== null) {
     for (const [key, value] of Object.entries(body.answers)) {
       if (typeof value === "string") answers[key] = value.trim().slice(0, 1000);
+      if (Array.isArray(value)) {
+        answers[key] = value
+          .filter((item): item is string => typeof item === "string")
+          .slice(0, 30)
+          .map((item) => item.slice(0, 80));
+      }
     }
   }
   return {

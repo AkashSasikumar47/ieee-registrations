@@ -6,11 +6,8 @@ import { Alert, AlertDescription } from "@ieee/ui/components/alert";
 import { Button } from "@ieee/ui/components/button";
 import { Input } from "@ieee/ui/components/input";
 import { Label } from "@ieee/ui/components/label";
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@ieee/ui/components/native-select";
 import { INPUT_PATTERNS } from "@/lib/validate";
+import { Choice } from "@/components/choice";
 
 export function FindForm({
   events,
@@ -54,20 +51,18 @@ export function FindForm({
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-      <div className="flex flex-col gap-2 *:data-[slot=native-select-wrapper]:w-full">
+      <div className="flex flex-col gap-2">
         <Label htmlFor="event">Event</Label>
-        <NativeSelect
+        <Choice
           id="event"
           required
           value={slug}
-          onChange={(event) => setSlug(event.target.value)}
-        >
-          {events.map((event) => (
-            <NativeSelectOption key={event.slug} value={event.slug}>
-              {event.name}
-            </NativeSelectOption>
-          ))}
-        </NativeSelect>
+          onChange={setSlug}
+          options={events.map((event) => ({
+            value: event.slug,
+            label: event.name,
+          }))}
+        />
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="register_number">Register number</Label>

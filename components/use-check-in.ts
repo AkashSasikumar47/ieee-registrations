@@ -28,12 +28,13 @@ export function useCheckIn() {
     setPending(null);
     if (failure) {
       setError(failure);
-      return;
+      return false;
     }
     setOverrides((current) => ({
       ...current,
       [entry.id]: (data.checked_in_at as string | null) ?? null,
     }));
+    return true;
   }
 
   return { checkedInAt, toggle, pending, error };

@@ -23,7 +23,7 @@ export default function FaqPage() {
           title="Questions, answered"
           lead="Everything about registering, teams, waitlists and tickets."
         />
-        <div className="grid gap-6 px-gutter py-10 md:grid-cols-4 md:gap-3 md:py-14">
+        <div className="grid gap-6 px-gutter py-7 md:grid-cols-4 md:gap-3 md:py-9">
           <p className="font-mono text-xs uppercase">{FAQS.length} questions</p>
           <Reveal className="md:col-span-3">
             <Accordion
@@ -38,7 +38,7 @@ export default function FaqPage() {
                   value={`faq-${index}`}
                   className="last:border-b"
                 >
-                  <AccordionTrigger className="items-baseline gap-6 rounded-none py-5 hover:no-underline">
+                  <AccordionTrigger className="items-baseline gap-6 rounded-none py-4 hover:no-underline">
                     <span className="flex items-baseline gap-6">
                       <span className="w-6 shrink-0 font-mono text-xs text-muted-foreground tabular-nums">
                         {String(index + 1).padStart(2, "0")}

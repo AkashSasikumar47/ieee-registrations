@@ -2,7 +2,16 @@ import type { Json, Tables } from "@ieee/supabase/types";
 
 export type Event = Tables<"ieee_registrations_events">;
 
-export const FIELD_TYPES = ["text", "textarea", "select", "url"] as const;
+export const FIELD_TYPES = [
+  "text",
+  "textarea",
+  "number",
+  "email",
+  "url",
+  "select",
+  "multiselect",
+  "checkbox",
+] as const;
 
 export type FieldType = (typeof FIELD_TYPES)[number];
 
@@ -12,6 +21,19 @@ export type Field = {
   type: FieldType;
   required: boolean;
   options?: string[];
+};
+
+export const KIND_LABELS: Record<string, string> = {
+  hackathon: "Hackathon",
+  workshop: "Workshop",
+  ideathon: "Ideathon",
+  talks: "Talks",
+  fest: "Fest",
+};
+
+export const FORMAT_LABELS: Record<string, string> = {
+  campus: "On campus",
+  online: "Online",
 };
 
 export type Phase = "upcoming" | "open" | "closed" | "over";
@@ -45,12 +67,10 @@ export function parseFields(json: Json): Field[] {
 }
 
 export function getPhase(event: Event, now = new Date()): Phase {
-  if (now < new Date(event.opens_at)) return "upcoming";
-  if (now < new Date(event.closes_at)) return "open";
+  if (event.opens_at && event.closes_at) {
+    if (now < new Date(event.opens_at)) return "upcoming";
+    if (now < new Date(event.closes_at)) return "open";
+  }
   if (now < new Date(event.ends_at)) return "closed";
   return "over";
-}
-
-export function seatsLeft(event: Event, taken: number) {
-  return event.capacity === null ? null : Math.max(event.capacity - taken, 0);
 }

@@ -12,8 +12,21 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
-export default async function NewEventPage() {
-  if (!(await getAdmin(await createClient()))) redirect("/admin/login");
+export default async function NewEventPage({
+  searchParams,
+}: PageProps<"/admin/events/new">) {
+  const supabase = await createClient();
+  if (!(await getAdmin(supabase))) redirect("/admin/login");
+
+  const from = (await searchParams).from;
+  const { data: template } =
+    typeof from === "string"
+      ? await supabase
+          .from("ieee_registrations_events")
+          .select("*")
+          .eq("id", from)
+          .maybeSingle()
+      : { data: null };
 
   return (
     <div className="flex flex-1 flex-col">
@@ -21,10 +34,14 @@ export default async function NewEventPage() {
       <main className="flex-1">
         <AdminIntro
           label="Admin · New event"
-          title="New event"
-          lead="It stays a draft until you publish it."
+          title={template ? `Copy of ${template.name}` : "New event"}
+          lead={
+            template
+              ? "The details, format and form are copied. Give it a name, a link and new dates."
+              : "It stays a draft until you publish it."
+          }
         />
-        <EventEditor />
+        <EventEditor template={template ?? undefined} />
       </main>
       <AdminFooter />
     </div>

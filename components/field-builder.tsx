@@ -4,12 +4,9 @@ import { ArrowDown, ArrowUp, Plus, X } from "lucide-react";
 import { Button } from "@ieee/ui/components/button";
 import { Input } from "@ieee/ui/components/input";
 import { Label } from "@ieee/ui/components/label";
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@ieee/ui/components/native-select";
 import { Textarea } from "@ieee/ui/components/textarea";
 import { FIELD_TYPES, type FieldType } from "@/lib/events";
+import { Choice } from "@/components/choice";
 
 export type BuilderField = {
   id: string;
@@ -24,11 +21,17 @@ export type BuilderField = {
 const TYPE_LABELS: Record<FieldType, string> = {
   text: "Short answer",
   textarea: "Long answer",
-  select: "Dropdown",
+  number: "Number",
+  email: "Email",
   url: "Link",
+  select: "Dropdown",
+  multiselect: "Pick several",
+  checkbox: "Tick box",
 };
 
-export function newField(): BuilderField {
+const HAS_OPTIONS: FieldType[] = ["select", "multiselect"];
+
+function newField(): BuilderField {
   return {
     id: crypto.randomUUID(),
     key: "",
@@ -93,37 +96,28 @@ export function FieldBuilder({
                       }
                     />
                   </div>
-                  <NativeSelect
-                    aria-label="Answer type"
+                  <Choice
+                    label="Answer type"
                     value={field.type}
-                    onChange={(event) =>
-                      update(field.id, {
-                        type: event.target.value as FieldType,
-                      })
+                    onChange={(type) =>
+                      update(field.id, { type: type as FieldType })
                     }
-                  >
-                    {FIELD_TYPES.map((type) => (
-                      <NativeSelectOption key={type} value={type}>
-                        {TYPE_LABELS[type]}
-                      </NativeSelectOption>
-                    ))}
-                  </NativeSelect>
-                  <NativeSelect
-                    aria-label="Required"
+                    options={FIELD_TYPES.map((type) => ({
+                      value: type,
+                      label: TYPE_LABELS[type],
+                    }))}
+                  />
+                  <Choice
+                    label="Required"
                     value={field.required ? "required" : "optional"}
-                    onChange={(event) =>
-                      update(field.id, {
-                        required: event.target.value === "required",
-                      })
+                    onChange={(choice) =>
+                      update(field.id, { required: choice === "required" })
                     }
-                  >
-                    <NativeSelectOption value="optional">
-                      Optional
-                    </NativeSelectOption>
-                    <NativeSelectOption value="required">
-                      Required
-                    </NativeSelectOption>
-                  </NativeSelect>
+                    options={[
+                      { value: "optional", label: "Optional" },
+                      { value: "required", label: "Required" },
+                    ]}
+                  />
                   <div className="flex gap-1">
                     <Button
                       type="button"
@@ -158,7 +152,7 @@ export function FieldBuilder({
                     </Button>
                   </div>
                 </div>
-                {field.type === "select" && (
+                {HAS_OPTIONS.includes(field.type) && (
                   <Textarea
                     aria-label="Options"
                     required

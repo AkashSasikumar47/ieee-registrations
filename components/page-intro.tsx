@@ -11,7 +11,7 @@ export function PageIntro({
   lead?: string;
 }) {
   return (
-    <div className="flex flex-col gap-6 border-b px-gutter pt-12 pb-10 md:pt-20 md:pb-14">
+    <div className="flex flex-col gap-4 border-b px-gutter pt-8 pb-7 md:pt-10 md:pb-8">
       <Reveal
         as="p"
         trigger="mount"
@@ -25,7 +25,7 @@ export function PageIntro({
         text={title}
         trigger="mount"
         delay={0.1}
-        className="font-display max-w-6xl text-[clamp(2.75rem,8vw,7.5rem)] leading-[0.85] font-black tracking-[-0.05em] text-balance uppercase"
+        className="font-display max-w-6xl text-[clamp(2rem,4.4vw,4rem)] leading-[0.85] font-black tracking-[-0.05em] text-balance uppercase"
       />
       {lead ? (
         <Reveal

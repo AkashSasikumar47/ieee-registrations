@@ -12,6 +12,7 @@ export type AdminEntry = {
   role: "solo" | "leader" | "member";
   status: TicketStatus;
   team: string | null;
+  short: boolean;
   ticket_code: string;
   answers: Record<string, string>;
   created_at: string;
@@ -28,7 +29,7 @@ export async function loadAdminEntries(supabase: SupabaseClient, id: string) {
     supabase
       .from("ieee_registrations_entries")
       .select(
-        "id, name, email, register_number, phone, role, status, ticket_code, answers, created_at, checked_in_at, team:ieee_registrations_teams(name)",
+        "id, team_id, name, email, register_number, phone, role, status, ticket_code, answers, created_at, checked_in_at, team:ieee_registrations_teams(name)",
       )
       .eq("event_id", id)
       .order("created_at", { ascending: true }),
@@ -37,11 +38,22 @@ export async function loadAdminEntries(supabase: SupabaseClient, id: string) {
   if (error) console.error("Failed to load registrations:", error.message);
   if (!event) return null;
 
-  const entries: AdminEntry[] = (rows ?? []).map((row) => ({
+  const sizes = new Map<string, number>();
+  for (const row of rows ?? []) {
+    if (row.team_id && row.status !== "cancelled") {
+      sizes.set(row.team_id, (sizes.get(row.team_id) ?? 0) + 1);
+    }
+  }
+
+  const entries: AdminEntry[] = (rows ?? []).map(({ team_id, ...row }) => ({
     ...row,
     role: row.role as AdminEntry["role"],
     status: row.status as TicketStatus,
     team: row.team?.name ?? null,
+    short:
+      team_id !== null &&
+      row.status !== "cancelled" &&
+      (sizes.get(team_id) ?? 0) < event.team_min,
     answers:
       typeof row.answers === "object" &&
       row.answers !== null &&
@@ -49,7 +61,11 @@ export async function loadAdminEntries(supabase: SupabaseClient, id: string) {
         ? Object.fromEntries(
             Object.entries(row.answers).map(([key, value]) => [
               key,
-              typeof value === "string" ? value : "",
+              typeof value === "string"
+                ? value
+                : Array.isArray(value)
+                  ? value.join(", ")
+                  : "",
             ]),
           )
         : {},

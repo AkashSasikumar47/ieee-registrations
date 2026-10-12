@@ -14,6 +14,7 @@ const MESSAGES: Record<string, string> = {
   team_full: "This team is already full.",
   ticket_not_found: "This registration doesn't exist or was cancelled.",
   event_over: "This event is over, so the registration can't be changed.",
+  not_waitlisted: "This registration is no longer on the waitlist.",
 };
 
 export function errorMessage(raw: string | undefined, fallback: string) {

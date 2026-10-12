@@ -7,24 +7,33 @@ import { Alert, AlertDescription } from "@ieee/ui/components/alert";
 import { Button } from "@ieee/ui/components/button";
 import { Input } from "@ieee/ui/components/input";
 import { Label } from "@ieee/ui/components/label";
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@ieee/ui/components/native-select";
 import { Textarea } from "@ieee/ui/components/textarea";
 import { Collapse } from "@/components/motion/collapse";
 import { DeleteEventButton } from "@/components/delete-event-button";
 import { FieldBuilder, type BuilderField } from "@/components/field-builder";
-import { parseFields, type Event } from "@/lib/events";
+import {
+  FORMAT_LABELS,
+  KIND_LABELS,
+  parseFields,
+  type Event,
+} from "@/lib/events";
 import { toBuilder, toFields } from "@/lib/field-keys";
 import { fromLocalInput, toLocalInput } from "@/lib/ist";
 import { send } from "@/lib/send";
+import { Choice } from "@/components/choice";
 
 type Draft = {
   name: string;
   slug: string;
+  kind: string;
+  format: "campus" | "online";
   summary: string;
+  about: string;
+  website: string;
+  accent: string;
+  backdrop: string;
   venue: string;
+  registers: boolean;
   starts_at: string;
   ends_at: string;
   opens_at: string;
@@ -37,13 +46,20 @@ type Draft = {
   fields: BuilderField[];
 };
 
-function toDraft(event?: Event): Draft {
+function toDraft(event?: Event, copy = false): Draft {
   if (!event) {
     return {
       name: "",
       slug: "",
+      kind: "workshop",
+      format: "campus",
       summary: "",
+      about: "",
+      website: "",
+      accent: "",
+      backdrop: "",
       venue: "",
+      registers: true,
       starts_at: "",
       ends_at: "",
       opens_at: "",
@@ -57,19 +73,26 @@ function toDraft(event?: Event): Draft {
     };
   }
   return {
-    name: event.name,
-    slug: event.slug,
+    name: copy ? "" : event.name,
+    slug: copy ? "" : event.slug,
+    kind: event.kind,
+    format: event.format === "online" ? "online" : "campus",
     summary: event.summary,
+    about: event.about,
+    website: copy ? "" : event.website,
+    accent: event.accent,
+    backdrop: event.backdrop,
     venue: event.venue,
-    starts_at: toLocalInput(event.starts_at),
-    ends_at: toLocalInput(event.ends_at),
-    opens_at: toLocalInput(event.opens_at),
-    closes_at: toLocalInput(event.closes_at),
+    registers: copy || event.opens_at !== null,
+    starts_at: copy ? "" : toLocalInput(event.starts_at),
+    ends_at: copy ? "" : toLocalInput(event.ends_at),
+    opens_at: copy || !event.opens_at ? "" : toLocalInput(event.opens_at),
+    closes_at: copy || !event.closes_at ? "" : toLocalInput(event.closes_at),
     capacity: event.capacity ? String(event.capacity) : "",
     mode: event.mode === "team" ? "team" : "solo",
     team_min: String(event.mode === "team" ? event.team_min : 2),
     team_max: String(event.mode === "team" ? event.team_max : 4),
-    status: event.status === "published" ? "published" : "draft",
+    status: !copy && event.status === "published" ? "published" : "draft",
     fields: toBuilder(parseFields(event.fields)),
   };
 }
@@ -136,13 +159,17 @@ function Field({
 
 export function EventEditor({
   event,
+  template,
   registrations = 0,
 }: {
   event?: Event;
+  template?: Event;
   registrations?: number;
 }) {
   const router = useRouter();
-  const [draft, setDraft] = useState(() => toDraft(event));
+  const [draft, setDraft] = useState(() =>
+    template ? toDraft(template, true) : toDraft(event),
+  );
   const [slugTouched, setSlugTouched] = useState(Boolean(event));
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
@@ -238,21 +265,94 @@ export function EventEditor({
               />
             </div>
           </Field>
+          <Field id="kind" label="Kind">
+            <Choice
+              id="kind"
+              value={draft.kind}
+              onChange={(kind) => set("kind", kind)}
+              options={Object.entries(KIND_LABELS).map(([value, label]) => ({
+                value,
+                label,
+              }))}
+            />
+          </Field>
+          <Field id="format" label="Where">
+            <Choice
+              id="format"
+              value={draft.format}
+              onChange={(format) => set("format", format as Draft["format"])}
+              options={Object.entries(FORMAT_LABELS).map(([value, label]) => ({
+                value,
+                label,
+              }))}
+            />
+          </Field>
+          {draft.format === "campus" && (
+            <Field id="venue" label="Venue" className="sm:col-span-2">
+              <Input
+                id="venue"
+                maxLength={200}
+                placeholder="e.g. Mini Hall 2, T P Ganesan Auditorium"
+                value={draft.venue}
+                onChange={input("venue")}
+              />
+            </Field>
+          )}
           <Field id="summary" label="Summary" className="sm:col-span-2">
             <Textarea
               id="summary"
-              rows={4}
+              rows={3}
               maxLength={1000}
               value={draft.summary}
               onChange={input("summary")}
             />
           </Field>
-          <Field id="venue" label="Venue" className="sm:col-span-2">
+          <Field id="about" label="More details" className="sm:col-span-2">
+            <Textarea
+              id="about"
+              rows={6}
+              maxLength={5000}
+              value={draft.about}
+              onChange={input("about")}
+            />
+          </Field>
+          {(
+            [
+              ["accent", "Poster colour"],
+              ["backdrop", "Poster fade to"],
+            ] as const
+          ).map(([key, label]) => (
+            <Field key={key} id={key} label={label}>
+              <div className="flex items-stretch gap-2">
+                <span
+                  aria-hidden="true"
+                  style={{ background: draft[key] || undefined }}
+                  className="w-10 shrink-0 border bg-[repeating-linear-gradient(135deg,var(--border)_0_1px,transparent_1px_6px)]"
+                />
+                <Input
+                  id={key}
+                  maxLength={7}
+                  pattern="#[0-9a-f]{6}"
+                  title="A hex colour like #e85a16, or blank"
+                  placeholder="Blank for a pattern"
+                  className="font-mono"
+                  value={draft[key]}
+                  onChange={(changed) =>
+                    set(key, changed.target.value.trim().toLowerCase())
+                  }
+                />
+              </div>
+            </Field>
+          ))}
+          <Field id="website" label="Event website" className="sm:col-span-2">
             <Input
-              id="venue"
+              id="website"
+              type="url"
               maxLength={200}
-              value={draft.venue}
-              onChange={input("venue")}
+              placeholder="https://"
+              pattern="https://.*"
+              value={draft.website}
+              onChange={input("website")}
             />
           </Field>
         </div>
@@ -260,12 +360,30 @@ export function EventEditor({
 
       <Section index={2} title="Dates" note="All times are in IST.">
         <div className="grid gap-5 sm:grid-cols-2">
+          <Field id="registers" label="Registration" className="sm:col-span-2">
+            <Choice
+              id="registers"
+              value={draft.registers ? "yes" : "no"}
+              onChange={(choice) => set("registers", choice === "yes")}
+              options={[
+                { value: "yes", label: "Register through this site" },
+                {
+                  value: "no",
+                  label: "No registration here (a record of the event)",
+                },
+              ]}
+            />
+          </Field>
           {(
             [
               ["starts_at", "Event starts"],
               ["ends_at", "Event ends"],
-              ["opens_at", "Registrations open"],
-              ["closes_at", "Registrations close"],
+              ...(draft.registers
+                ? ([
+                    ["opens_at", "Registrations open"],
+                    ["closes_at", "Registrations close"],
+                  ] as const)
+                : []),
             ] as const
           ).map(([key, label]) => (
             <Field key={key} id={key} label={label}>
@@ -287,12 +405,27 @@ export function EventEditor({
         title="Format"
         note="When the seats fill up, new registrations join the waitlist."
       >
+        {registrations > 0 && (
+          <Alert className="mb-5">
+            <AlertDescription>
+              {registrations}{" "}
+              {registrations === 1 ? "person has" : "people have"} registered.
+              Changing who registers or the team size now can leave existing
+              teams too small or too big.
+            </AlertDescription>
+          </Alert>
+        )}
         <div className="grid gap-5 sm:grid-cols-2">
           <Field id="mode" label="Who registers">
-            <NativeSelect id="mode" value={draft.mode} onChange={input("mode")}>
-              <NativeSelectOption value="solo">Individuals</NativeSelectOption>
-              <NativeSelectOption value="team">Teams</NativeSelectOption>
-            </NativeSelect>
+            <Choice
+              id="mode"
+              value={draft.mode}
+              onChange={(mode) => set("mode", mode as Draft["mode"])}
+              options={[
+                { value: "solo", label: "Individuals" },
+                { value: "team", label: "Teams" },
+              ]}
+            />
           </Field>
           <Field id="capacity" label="Seats (blank for unlimited)">
             <Input
@@ -340,6 +473,15 @@ export function EventEditor({
         title="Form"
         note="Extra questions on the registration form. Changing a question keeps the answers already given."
       >
+        {registrations > 0 && (
+          <Alert className="mb-5">
+            <AlertDescription>
+              People have already answered this form. New required questions
+              only apply to new registrations, and removed questions drop out of
+              the export.
+            </AlertDescription>
+          </Alert>
+        )}
         <FieldBuilder
           fields={draft.fields}
           onChange={(fields) => set("fields", fields)}
@@ -367,16 +509,24 @@ export function EventEditor({
             <Label htmlFor="status" className="sr-only">
               Status
             </Label>
-            <NativeSelect
+            <Choice
               id="status"
               value={draft.status}
-              onChange={input("status")}
-            >
-              <NativeSelectOption value="draft">Draft</NativeSelectOption>
-              <NativeSelectOption value="published">
-                Published
-              </NativeSelectOption>
-            </NativeSelect>
+              onChange={(status) => set("status", status as Draft["status"])}
+              options={[
+                { value: "draft", label: "Draft" },
+                { value: "published", label: "Published" },
+              ]}
+              className="w-36"
+            />
+            {event && (
+              <Link
+                href={`/admin/events/new?from=${event.id}`}
+                className="font-mono text-xs uppercase underline-offset-4 hover:underline"
+              >
+                Duplicate
+              </Link>
+            )}
             {event?.status === "published" && (
               <Link
                 href={`/${event.slug}`}

@@ -26,9 +26,9 @@ export default function HowItWorksPage() {
               as="li"
               key={step.title}
               delay={index * 0.1}
-              className="flex min-h-72 flex-col justify-between gap-10 border-b px-4 py-8 md:border-r md:border-b-0 md:px-5 md:py-10 md:last:border-r-0"
+              className="flex min-h-72 flex-col justify-between gap-10 border-b px-4 py-8 md:border-r md:border-b-0 md:px-5 md:py-8 md:last:border-r-0"
             >
-              <span className="font-display text-[clamp(4rem,9vw,8rem)] leading-[0.8] font-black tracking-[-0.06em]">
+              <span className="font-display text-[clamp(2.5rem,4.5vw,4.25rem)] leading-[0.8] font-black tracking-[-0.06em]">
                 0{index + 1}
               </span>
               <span className="flex flex-col gap-2">
@@ -42,7 +42,7 @@ export default function HowItWorksPage() {
             </Reveal>
           ))}
         </ol>
-        <div className="flex flex-wrap gap-3 px-gutter py-10 md:py-14">
+        <div className="flex flex-wrap gap-3 px-gutter py-7 md:py-9">
           <Button size="lg" asChild>
             <Link href="/events">
               Browse events <ArrowRight />

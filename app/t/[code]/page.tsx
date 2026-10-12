@@ -76,7 +76,7 @@ export default async function TicketPage({
     <div className="flex flex-1 flex-col">
       <SiteHeader />
       <main className="flex-1">
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-gutter py-10 md:py-16">
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-gutter py-8 md:py-10">
           {entry && (
             <TicketCheckIn
               entry={entry}
@@ -88,7 +88,7 @@ export default async function TicketPage({
             <div className="flex items-start gap-3">
               <CircleCheck className="mt-1 size-6 shrink-0" />
               <div className="flex flex-col gap-1">
-                <h1 className="font-display text-3xl font-black tracking-[-0.04em] uppercase md:text-5xl">
+                <h1 className="font-display text-3xl font-black tracking-[-0.04em] uppercase md:text-4xl">
                   {ticket.status === "confirmed"
                     ? "You're registered."
                     : "You're on the waitlist."}
@@ -114,7 +114,7 @@ export default async function TicketPage({
                 </span>
               </div>
               <div className="flex flex-col gap-2">
-                <h2 className="font-display text-4xl leading-[0.9] font-black tracking-[-0.045em] text-balance uppercase md:text-5xl">
+                <h2 className="font-display text-4xl leading-[0.9] font-black tracking-[-0.045em] text-balance uppercase md:text-4xl">
                   {ticket.event.name}
                 </h2>
                 <p className="text-muted-foreground">

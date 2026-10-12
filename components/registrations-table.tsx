@@ -6,10 +6,6 @@ import { Alert, AlertDescription } from "@ieee/ui/components/alert";
 import { Button } from "@ieee/ui/components/button";
 import { Input } from "@ieee/ui/components/input";
 import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@ieee/ui/components/native-select";
-import {
   Table,
   TableBody,
   TableCell,
@@ -18,10 +14,12 @@ import {
   TableRow,
 } from "@ieee/ui/components/table";
 import { AdminCancelButton } from "@/components/admin-cancel-button";
+import { AdminPromoteButton } from "@/components/admin-promote-button";
 import { useCheckIn } from "@/components/use-check-in";
 import type { AdminEntry } from "@/lib/admin-entries";
 import type { Field } from "@/lib/events";
 import { formatDayTime } from "@/lib/format";
+import { Choice } from "@/components/choice";
 
 const FILTERS = [
   { value: "all", label: "All" },
@@ -36,11 +34,9 @@ const ROLES = { solo: "Solo", leader: "Lead", member: "Member" };
 export function RegistrationsTable({
   entries,
   fields,
-  over,
 }: {
   entries: AdminEntry[];
   fields: Field[];
-  over: boolean;
 }) {
   const { checkedInAt, toggle, pending, error } = useCheckIn();
   const [query, setQuery] = useState("");
@@ -73,17 +69,13 @@ export function RegistrationsTable({
           onChange={(event) => setQuery(event.target.value)}
           className="sm:max-w-md"
         />
-        <NativeSelect
-          aria-label="Filter"
+        <Choice
+          label="Filter"
           value={filter}
-          onChange={(event) => setFilter(event.target.value)}
-        >
-          {FILTERS.map((item) => (
-            <NativeSelectOption key={item.value} value={item.value}>
-              {item.label}
-            </NativeSelectOption>
-          ))}
-        </NativeSelect>
+          onChange={setFilter}
+          options={FILTERS}
+          className="w-full sm:w-44"
+        />
         <p className="font-mono text-xs text-muted-foreground uppercase sm:ml-auto sm:self-center">
           Showing {shown.length} of {entries.length}
         </p>
@@ -149,6 +141,11 @@ export function RegistrationsTable({
                       {entry.team
                         ? `${entry.team} · ${ROLES[entry.role]}`
                         : "—"}
+                      {entry.short && (
+                        <span className="ml-2 border px-1.5 py-0.5 font-mono text-[0.65rem] uppercase">
+                          Team short
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <span
@@ -191,7 +188,11 @@ export function RegistrationsTable({
                             {arrived ? "Undo" : "Check in"}
                           </Button>
                         )}
-                        {entry.status !== "cancelled" && !over && (
+                        {entry.status === "waitlisted" &&
+                          entry.role !== "member" && (
+                            <AdminPromoteButton id={entry.id} />
+                          )}
+                        {entry.status !== "cancelled" && (
                           <AdminCancelButton
                             id={entry.id}
                             name={entry.name}
