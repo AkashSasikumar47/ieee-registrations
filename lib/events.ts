@@ -36,7 +36,7 @@ export const FORMAT_LABELS: Record<string, string> = {
   online: "Online",
 };
 
-export type Phase = "upcoming" | "open" | "closed" | "over";
+type Phase = "upcoming" | "open" | "closed" | "over";
 
 export function parseFields(json: Json): Field[] {
   if (!Array.isArray(json)) return [];

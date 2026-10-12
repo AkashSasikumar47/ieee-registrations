@@ -5,14 +5,19 @@ import { safeReturnTo } from "@/lib/return-to";
 export async function proxy(request: NextRequest) {
   const { response, user } = await updateSession(request);
   const { pathname } = request.nextUrl;
-  const isLogin = pathname === "/admin/login";
+  const area = pathname.startsWith("/scan")
+    ? "/scan"
+    : pathname.startsWith("/admin")
+      ? "/admin"
+      : null;
+  const isLogin = pathname === `${area}/login`;
 
-  if (!pathname.startsWith("/admin") || (user ? !isLogin : isLogin)) {
+  if (!area || (user ? !isLogin : isLogin)) {
     return response;
   }
 
   const url = request.nextUrl.clone();
-  url.pathname = user ? "/admin" : "/admin/login";
+  url.pathname = user ? area : `${area}/login`;
   url.search = "";
   const returnTo = user ? null : safeReturnTo(pathname);
   if (returnTo) url.searchParams.set("next", returnTo);
@@ -26,6 +31,8 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     "/admin/:path*",
+    "/scan",
+    "/scan/:path*",
     "/api/admin/:path*",
     "/api/auth/:path*",
     "/t/:path*",

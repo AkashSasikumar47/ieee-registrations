@@ -5,7 +5,8 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient();
   await supabase.auth.signOut();
   const url = request.nextUrl.clone();
-  url.pathname = "/admin/login";
+  const form = await request.formData().catch(() => null);
+  url.pathname = form?.get("from") === "scan" ? "/scan/login" : "/admin/login";
   url.search = "";
   return NextResponse.redirect(url, 303);
 }

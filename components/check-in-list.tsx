@@ -1,250 +1,117 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Check, ScanLine, Undo2, X } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
+import Link from "next/link";
+import { ScanLine } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@ieee/ui/components/alert";
 import { Button } from "@ieee/ui/components/button";
-import { Input } from "@ieee/ui/components/input";
-import { Collapse } from "@/components/motion/collapse";
-import { DURATION, EASE_OUT } from "@/components/motion/timing";
-import { TicketScanner } from "@/components/ticket-scanner";
-import { useCheckIn } from "@/components/use-check-in";
-import type { AdminEntry } from "@/lib/admin-entries";
+import { CheckInPeople } from "@/components/check-in-people";
+import { CheckInProgress } from "@/components/check-in-progress";
+import { useLiveCheckIns } from "@/components/use-live-check-ins";
+import type { CheckInEntry } from "@/lib/check-ins";
 import { formatDayTime } from "@/lib/format";
 
-export function CheckInList({ entries }: { entries: AdminEntry[] }) {
-  const { checkedInAt, toggle, pending, error } = useCheckIn();
-  const [query, setQuery] = useState("");
-  const [scanning, setScanning] = useState(false);
-  const [scan, setScan] = useState<{
-    ok: boolean;
-    text: string;
-    at: number;
-  } | null>(null);
-  const [recent, setRecent] = useState<string[]>([]);
+export function CheckInList({
+  eventId,
+  initial,
+  scanUrl,
+  qr,
+}: {
+  eventId: string;
+  initial: CheckInEntry[];
+  scanUrl: string;
+  qr: string;
+}) {
+  const { entries, pending, error, toggle } = useLiveCheckIns(eventId, initial);
 
-  useEffect(() => {
-    if (window.matchMedia("(pointer: coarse)").matches) setScanning(true);
-  }, []);
-
-  function report(ok: boolean, text: string) {
-    setScan({ ok, text, at: Date.now() });
-    navigator.vibrate?.(ok ? 80 : [60, 60, 60]);
-  }
-
-  async function arrive(entry: AdminEntry) {
-    const done = await toggle(entry);
-    if (done)
-      setRecent((list) =>
-        [entry.id, ...list.filter((id) => id !== entry.id)].slice(0, 5),
-      );
-    return done;
-  }
-
-  async function undo(entry: AdminEntry) {
+  async function flip(entry: CheckInEntry) {
+    const wasIn = Boolean(entry.checked_in_at);
     if (await toggle(entry)) {
-      setRecent((list) => list.filter((id) => id !== entry.id));
-      toast.success(`Undid ${entry.name}'s check-in.`);
-    }
-  }
-
-  async function tap(entry: AdminEntry) {
-    if (checkedInAt(entry)) return undo(entry);
-    if (await arrive(entry)) toast.success(`Checked in ${entry.name}.`);
-  }
-
-  async function scanned(code: string) {
-    const entry = entries.find((item) => item.ticket_code === code);
-    if (!entry) {
-      report(false, "This ticket isn't for this event.");
-      return;
-    }
-    if (entry.status !== "confirmed") {
-      report(false, `${entry.name} is ${entry.status}.`);
-      return;
-    }
-    const at = checkedInAt(entry);
-    if (at) {
-      report(
-        false,
-        `${entry.name} already checked in at ${formatDayTime(at)}.`,
+      toast.success(
+        wasIn ? `Undid ${entry.name}'s check-in.` : `Checked in ${entry.name}.`,
       );
-      return;
     }
-    if (await arrive(entry)) report(true, `Checked in: ${entry.name}`);
-    else report(false, `Couldn't check in ${entry.name}. Try again.`);
   }
-  const confirmed = entries.filter((entry) => entry.status === "confirmed");
-  const arrived = confirmed.filter((entry) => checkedInAt(entry)).length;
-  const search = query.trim().toLowerCase();
-  const shown = (
-    search
-      ? confirmed.filter((entry) =>
-          [
-            entry.name,
-            entry.register_number,
-            entry.team ?? "",
-            entry.ticket_code,
-          ].some((value) => value.toLowerCase().includes(search)),
-        )
-      : confirmed
-  ).sort(
-    (a, b) => Number(Boolean(checkedInAt(a))) - Number(Boolean(checkedInAt(b))),
+
+  const arrived = entries.filter((entry) => entry.checked_in_at);
+  const last = arrived.reduce<CheckInEntry | null>(
+    (latest, entry) =>
+      !latest || (entry.checked_in_at ?? "") > (latest.checked_in_at ?? "")
+        ? entry
+        : latest,
+    null,
   );
-  const latest = recent
-    .map((id) => entries.find((entry) => entry.id === id))
-    .filter((entry): entry is AdminEntry =>
-      Boolean(entry && checkedInAt(entry)),
-    );
+  const stats = [
+    { label: "Arrived", value: String(arrived.length) },
+    { label: "Still to come", value: String(entries.length - arrived.length) },
+    {
+      label: "Last check-in",
+      value: last ? formatDayTime(last.checked_in_at ?? "") : "—",
+      note: last?.name,
+    },
+  ];
 
   return (
     <div className="flex flex-col">
-      <AnimatePresence>
-        {scan && (
-          <motion.div
-            key={scan.at}
-            aria-hidden="true"
-            className={`pointer-events-none fixed inset-0 z-50 ${scan.ok ? "bg-primary" : "bg-destructive"}`}
-            initial={{ opacity: 0.35 }}
-            animate={{ opacity: 0 }}
-            transition={{ duration: 0.7, ease: EASE_OUT }}
-          />
-        )}
-      </AnimatePresence>
-      <div className="flex flex-col gap-4 border-b px-gutter py-6">
-        <div className="flex items-end justify-between gap-4">
-          <p className="font-display text-5xl leading-none font-black tracking-[-0.05em] tabular-nums md:text-6xl">
-            {arrived}
-            <span className="text-muted-foreground"> / {confirmed.length}</span>
-          </p>
-          <p className="font-mono text-xs text-muted-foreground uppercase">
-            Arrived
-          </p>
-        </div>
-        <div className="h-1.5 bg-muted">
-          <motion.div
-            className="h-full bg-primary"
-            initial={false}
-            animate={{
-              width: `${confirmed.length ? (arrived / confirmed.length) * 100 : 0}%`,
-            }}
-            transition={{ duration: DURATION.collapse, ease: EASE_OUT }}
-          />
-        </div>
-        <div className="flex flex-col gap-3">
-          <Button
-            variant={scanning ? "outline" : "default"}
-            size="lg"
-            className="self-start font-mono uppercase"
-            onClick={() => {
-              setScanning((on) => !on);
-              setScan(null);
-            }}
-          >
-            {scanning ? (
-              <>
-                <X /> Close camera
-              </>
-            ) : (
-              <>
-                <ScanLine /> Scan tickets
-              </>
-            )}
-          </Button>
-          {scanning && <TicketScanner onCode={scanned} />}
-          {latest.length > 0 && (
-            <ul className="flex flex-col border-t">
-              {latest.map((entry) => (
-                <li
-                  key={entry.id}
-                  className="flex items-center justify-between gap-3 border-b py-2 text-sm"
-                >
-                  <span className="flex min-w-0 items-center gap-2">
-                    <Check className="size-4 shrink-0 text-primary" />
-                    <span className="truncate">{entry.name}</span>
-                  </span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="font-mono uppercase"
-                    disabled={pending === entry.id}
-                    onClick={() => undo(entry)}
-                  >
-                    <Undo2 /> Undo
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          )}
-          <Collapse show={scan !== null}>
-            <Alert variant={scan?.ok ? "default" : "destructive"}>
-              <AlertDescription className="text-base font-semibold">
-                {scan?.text}
-              </AlertDescription>
-            </Alert>
-          </Collapse>
-        </div>
-        <Input
-          type="search"
-          aria-label="Search"
-          placeholder="Name, register number, team or ticket code"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          className="h-12 text-base"
-        />
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-      </div>
-      {shown.length === 0 ? (
-        <p className="px-gutter py-12 font-mono text-xs text-muted-foreground uppercase">
-          {confirmed.length === 0
-            ? "No confirmed registrations yet."
-            : "Nobody matches that search."}
-        </p>
-      ) : (
-        <ul className="flex flex-col">
-          {shown.map((entry) => {
-            const at = checkedInAt(entry);
-            return (
-              <li
-                key={entry.id}
-                className={`flex items-center justify-between gap-4 border-b px-gutter py-4 ${at ? "bg-muted" : ""}`}
+      <div className="grid gap-6 border-b px-gutter py-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-stretch lg:gap-10">
+        <div className="flex flex-col justify-between gap-5">
+          <CheckInProgress arrived={arrived.length} total={entries.length} />
+          <dl className="grid grid-cols-3 border-t">
+            {stats.map((stat) => (
+              <div
+                key={stat.label}
+                className="flex min-w-0 flex-col gap-1 border-r py-3 pr-3 not-first:pl-4 last:border-r-0"
               >
-                <div className="flex min-w-0 flex-col gap-1">
-                  <span className="truncate text-lg font-semibold">
-                    {entry.name}
-                  </span>
-                  <span className="truncate font-mono text-xs text-muted-foreground uppercase">
-                    {entry.register_number}
-                    {entry.team && ` · ${entry.team}`}
-                    {at && ` · In at ${formatDayTime(at)}`}
-                  </span>
-                </div>
-                <Button
-                  size="lg"
-                  variant={at ? "outline" : "default"}
-                  className="shrink-0 font-mono uppercase"
-                  disabled={pending === entry.id}
-                  onClick={() => tap(entry)}
-                >
-                  {at ? (
-                    <>
-                      <Check /> In
-                    </>
-                  ) : (
-                    "Check in"
-                  )}
-                </Button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+                <dt className="font-mono text-xs text-muted-foreground uppercase">
+                  {stat.label}
+                </dt>
+                <dd className="truncate text-lg font-semibold tabular-nums">
+                  {stat.value}
+                </dd>
+                {stat.note && (
+                  <dd className="truncate text-xs text-muted-foreground">
+                    {stat.note}
+                  </dd>
+                )}
+              </div>
+            ))}
+          </dl>
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+        </div>
+        <aside className="flex items-center gap-5 border p-4 lg:w-[26rem]">
+          <div
+            className="w-28 shrink-0 [&_svg]:h-auto [&_svg]:w-full"
+            role="img"
+            aria-label="QR code for the scanner"
+            dangerouslySetInnerHTML={{ __html: qr }}
+          />
+          <div className="flex min-w-0 flex-col gap-3">
+            <div className="flex flex-col gap-1">
+              <h2 className="font-mono text-xs uppercase">Scan on a phone</h2>
+              <p className="text-sm text-muted-foreground">
+                Scan the code to open this event&apos;s scanner, then add it to
+                the home screen.
+              </p>
+            </div>
+            <Button
+              asChild
+              size="sm"
+              className="self-start font-mono uppercase"
+            >
+              <Link href={scanUrl.replace(/^https?:\/\/[^/]+/, "")}>
+                <ScanLine /> Open scanner
+              </Link>
+            </Button>
+          </div>
+        </aside>
+      </div>
+      <div className="px-gutter py-6">
+        <CheckInPeople entries={entries} pending={pending} onToggle={flip} />
+      </div>
     </div>
   );
 }

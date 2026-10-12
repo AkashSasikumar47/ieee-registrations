@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@ieee/supabase/server";
-import { safeReturnTo } from "@/lib/return-to";
+import { loginFor, safeReturnTo } from "@/lib/return-to";
 
 function redirectTo(request: NextRequest, pathname: string) {
   const url = request.nextUrl.clone();
@@ -14,7 +14,7 @@ function backToLogin(
   error: string,
   returnTo: string | null,
 ) {
-  const url = redirectTo(request, "/admin/login");
+  const url = redirectTo(request, loginFor(returnTo));
   url.searchParams.set("error", error);
   if (returnTo) url.searchParams.set("next", returnTo);
   return NextResponse.redirect(url, 303);

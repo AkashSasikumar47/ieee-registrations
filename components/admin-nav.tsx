@@ -7,6 +7,7 @@ import { Button } from "@ieee/ui/components/button";
 const LINKS = [
   { label: "Events", href: "/admin" },
   { label: "New event", href: "/admin/events/new" },
+  { label: "Scanner", href: "/scan" },
   { label: "View site", href: "/" },
 ];
 
