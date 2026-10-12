@@ -22,13 +22,13 @@ export default function AboutPage() {
             IEEE SRMIST team photo
           </Reveal>
         </div>
-        <ul className="grid border-t px-site-0 md:grid-cols-3">
+        <ul className="grid border-t px-gutter md:grid-cols-3">
           {ABOUT_IEEE.points.map((point, index) => (
             <Reveal
               as="li"
               key={point.title}
               delay={index * 0.1}
-              className="flex flex-col gap-3 border-b px-4 py-8 md:border-r md:px-5 md:py-8 md:last:border-r-0"
+              className="flex flex-col gap-3 border-b py-8 md:border-r md:px-6 md:first:pl-0 md:last:border-r-0 md:last:pr-0"
             >
               <h2 className="font-mono text-sm font-semibold uppercase">
                 {point.title}

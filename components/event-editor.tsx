@@ -1,9 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Alert, AlertDescription } from "@ieee/ui/components/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@ieee/ui/components/alert-dialog";
 import { Button } from "@ieee/ui/components/button";
 import { Input } from "@ieee/ui/components/input";
 import { Label } from "@ieee/ui/components/label";
@@ -108,6 +118,8 @@ function toSlug(name: string) {
 
 const LABEL = "font-mono text-xs uppercase";
 
+const SECTIONS = ["Basics", "Dates", "Format", "Form", "Delete"];
+
 function Section({
   index,
   title,
@@ -120,7 +132,10 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="grid gap-6 border-b px-gutter py-10 md:grid-cols-4 md:gap-3 md:py-12">
+    <section
+      id={`section-${title.toLowerCase()}`}
+      className="grid scroll-mt-20 gap-6 border-b px-gutter py-8 md:grid-cols-4 md:gap-3 md:py-10"
+    >
       <div className="flex flex-col gap-2">
         <p className="font-mono text-xs uppercase">
           [{String(index).padStart(2, "0")}] {title}
@@ -172,11 +187,40 @@ export function EventEditor({
   );
   const [slugTouched, setSlugTouched] = useState(Boolean(event));
   const [error, setError] = useState("");
-  const [saved, setSaved] = useState(false);
+  const [baseline, setBaseline] = useState(() => JSON.stringify(draft));
+  const form = useRef<HTMLFormElement>(null);
+  const [leaving, setLeaving] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const dirty = JSON.stringify(draft) !== baseline;
+  const guarded = dirty || !event;
+
+  useEffect(() => {
+    if (!guarded) return;
+    const leave = (event: BeforeUnloadEvent) => event.preventDefault();
+    const click = (event: MouseEvent) => {
+      const target = event.target as Element | null;
+      if (!target || form.current?.contains(target)) return;
+      const link = target.closest("a[href]");
+      const exit =
+        (link &&
+          link.getAttribute("target") !== "_blank" &&
+          !link.hasAttribute("download") &&
+          !link.getAttribute("href")?.startsWith("#")) ||
+        target.closest('button[type="submit"]');
+      if (!exit) return;
+      event.preventDefault();
+      event.stopPropagation();
+      setLeaving(link?.getAttribute("href") ?? "");
+    };
+    window.addEventListener("beforeunload", leave);
+    document.addEventListener("click", click, true);
+    return () => {
+      window.removeEventListener("beforeunload", leave);
+      document.removeEventListener("click", click, true);
+    };
+  }, [guarded]);
 
   function set<K extends keyof Draft>(key: K, value: Draft[K]) {
-    setSaved(false);
     setDraft((current) => ({ ...current, [key]: value }));
   }
 
@@ -188,14 +232,17 @@ export function EventEditor({
     ) => set(key, changed.target.value as never);
   }
 
-  async function save(formEvent: React.FormEvent) {
+  async function save(formEvent: React.FormEvent<HTMLFormElement>) {
     formEvent.preventDefault();
+    const submitter = (formEvent.nativeEvent as SubmitEvent).submitter;
+    const create = submitter?.dataset.action === "create";
+    const status = create ? "published" : draft.status;
     setError("");
-    setSaved(false);
     setPending(true);
     const fields = toFields(draft.fields);
     const body = {
       ...draft,
+      status,
       starts_at: fromLocalInput(draft.starts_at),
       ends_at: fromLocalInput(draft.ends_at),
       opens_at: fromLocalInput(draft.opens_at),
@@ -215,17 +262,41 @@ export function EventEditor({
       setError(failure);
       return;
     }
+    const next = { ...draft, status, fields: toBuilder(fields) };
+    setDraft(next);
+    setBaseline(JSON.stringify(next));
+    toast.success(
+      create
+        ? "Event created. It's live on the site."
+        : status === "draft"
+          ? "Draft saved. Only admins can see it."
+          : "Changes saved.",
+    );
     if (!event) {
       router.push(`/admin/events/${data.id}`);
       return;
     }
-    setDraft((current) => ({ ...current, fields: toBuilder(fields) }));
-    setSaved(true);
     router.refresh();
   }
 
   return (
-    <form onSubmit={save} className="flex flex-col">
+    <form ref={form} onSubmit={save} className="flex flex-col">
+      <nav
+        aria-label="Sections"
+        className="flex gap-1 overflow-x-auto border-b px-gutter py-2"
+      >
+        {SECTIONS.filter((title) => event || title !== "Delete").map(
+          (title) => (
+            <a
+              key={title}
+              href={`#section-${title.toLowerCase()}`}
+              className="shrink-0 px-2 py-1 font-mono text-xs text-muted-foreground uppercase first:pl-0 hover:text-foreground"
+            >
+              {title}
+            </a>
+          ),
+        )}
+      </nav>
       <Section index={1} title="Basics">
         <div className="grid gap-5 sm:grid-cols-2">
           <Field id="name" label="Event name" className="sm:col-span-2">
@@ -236,7 +307,6 @@ export function EventEditor({
               value={draft.name}
               onChange={(changed) => {
                 const name = changed.target.value;
-                setSaved(false);
                 setDraft((current) => ({
                   ...current,
                   name,
@@ -505,55 +575,92 @@ export function EventEditor({
           </Alert>
         </Collapse>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Label htmlFor="status" className="sr-only">
-              Status
-            </Label>
-            <Choice
-              id="status"
-              value={draft.status}
-              onChange={(status) => set("status", status as Draft["status"])}
-              options={[
-                { value: "draft", label: "Draft" },
-                { value: "published", label: "Published" },
-              ]}
-              className="w-36"
-            />
-            {event && (
-              <Link
-                href={`/admin/events/new?from=${event.id}`}
-                className="font-mono text-xs uppercase underline-offset-4 hover:underline"
+          <p className="font-mono text-xs text-muted-foreground uppercase">
+            {dirty
+              ? "Unsaved changes"
+              : draft.status === "published"
+                ? "Live on the site"
+                : "Draft · only admins can see it"}
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            {(dirty || !event) && (
+              <Button
+                type="button"
+                size="lg"
+                variant="ghost"
+                className="font-mono uppercase"
+                disabled={pending}
+                onClick={() => {
+                  setDraft(JSON.parse(baseline) as Draft);
+                  setError("");
+                  if (event) {
+                    toast("Changes discarded.");
+                    return;
+                  }
+                  toast("New event discarded.");
+                  router.push("/admin");
+                }}
               >
-                Duplicate
-              </Link>
-            )}
-            {event?.status === "published" && (
-              <Link
-                href={`/${event.slug}`}
-                target="_blank"
-                className="font-mono text-xs uppercase underline-offset-4 hover:underline"
-              >
-                View page
-              </Link>
-            )}
-          </div>
-          <div className="flex items-center gap-3">
-            {saved && (
-              <span className="font-mono text-xs text-muted-foreground uppercase">
-                Saved
-              </span>
+                {event ? "Discard changes" : "Discard"}
+              </Button>
             )}
             <Button
               type="submit"
+              data-action="save"
               size="lg"
+              variant={draft.status === "published" ? "default" : "outline"}
               className="font-mono uppercase"
-              disabled={pending}
+              disabled={pending || (Boolean(event) && !dirty)}
             >
-              {pending ? "Saving…" : event ? "Save changes" : "Create event"}
+              {event ? "Save changes" : "Save draft"}
             </Button>
+            {draft.status !== "published" && (
+              <Button
+                type="submit"
+                data-action="create"
+                size="lg"
+                className="font-mono uppercase"
+                disabled={pending}
+              >
+                Create event
+              </Button>
+            )}
           </div>
         </div>
       </div>
+      <AlertDialog
+        open={leaving !== null}
+        onOpenChange={(open) => {
+          if (!open) setLeaving(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {event ? "Leave without saving?" : "Discard this new event?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {event
+                ? "Your changes to this event haven't been saved. Save them first, or discard them and leave."
+                : "This new event hasn't been saved. Save it as a draft first, or discard it and leave."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep editing</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => {
+                const href = leaving;
+                setDraft(JSON.parse(baseline) as Draft);
+                setLeaving(null);
+                if (href) router.push(href);
+              }}
+            >
+              Discard and leave
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </form>
   );
 }

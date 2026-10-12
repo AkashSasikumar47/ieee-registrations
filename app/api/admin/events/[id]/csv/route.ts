@@ -7,7 +7,7 @@ import { formatDayTime } from "@/lib/format";
 import { UUID } from "@/lib/validate";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: RouteContext<"/api/admin/events/[id]/csv">,
 ) {
   const supabase = await getAdminClient();
@@ -25,7 +25,11 @@ export async function GET(
     return NextResponse.json({ error: "Event not found" }, { status: 404 });
   }
 
-  const { event, entries } = loaded;
+  const { event } = loaded;
+  const ids = new URL(request.url).searchParams.get("ids")?.split(",");
+  const entries = ids
+    ? loaded.entries.filter((entry) => ids.includes(entry.id))
+    : loaded.entries;
   const fields = parseFields(event.fields);
   const rows = [
     [

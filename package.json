@@ -19,7 +19,8 @@
     "qr-scanner": "catalog:",
     "qrcode": "catalog:",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "sonner": "catalog:"
   },
   "devDependencies": {
     "@ieee/config": "workspace:*",

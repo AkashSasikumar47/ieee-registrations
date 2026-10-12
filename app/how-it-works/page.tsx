@@ -20,13 +20,13 @@ export default function HowItWorksPage() {
           title="Three steps to your seat"
           lead="No accounts and no waiting. Register, and your ticket is ready the moment you finish."
         />
-        <ol className="grid border-b px-site-0 md:grid-cols-3">
+        <ol className="grid border-b px-gutter md:grid-cols-3">
           {STEPS.map((step, index) => (
             <Reveal
               as="li"
               key={step.title}
               delay={index * 0.1}
-              className="flex min-h-72 flex-col justify-between gap-10 border-b px-4 py-8 md:border-r md:border-b-0 md:px-5 md:py-8 md:last:border-r-0"
+              className="flex min-h-72 flex-col justify-between gap-10 border-b py-8 md:border-r md:border-b-0 md:px-6 md:first:pl-0 md:last:border-r-0 md:last:pr-0"
             >
               <span className="font-display text-[clamp(2.5rem,4.5vw,4.25rem)] leading-[0.8] font-black tracking-[-0.06em]">
                 0{index + 1}
