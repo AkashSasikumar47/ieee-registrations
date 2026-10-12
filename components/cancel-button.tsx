@@ -59,8 +59,8 @@ export function CancelButton({
       <AlertDialog>
         <AlertDialogTrigger asChild>
           <Button
-            variant="ghost"
-            className="text-destructive"
+            variant="outline"
+            className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
             disabled={pending}
           >
             Cancel registration

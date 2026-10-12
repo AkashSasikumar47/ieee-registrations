@@ -47,8 +47,8 @@ export function AdminCancelButton({
       <AlertDialogTrigger asChild>
         <Button
           size="sm"
-          variant="ghost"
-          className="font-mono text-destructive uppercase"
+          variant="outline"
+          className="border-destructive/40 font-mono text-destructive uppercase hover:bg-destructive/10 hover:text-destructive"
           disabled={pending}
           title={error || undefined}
         >

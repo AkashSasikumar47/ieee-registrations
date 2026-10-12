@@ -108,13 +108,13 @@ export default async function TicketPage({
                   IEEE SRMIST · Ticket
                 </span>
                 <span
-                  className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${ticket.status === "confirmed" ? "bg-foreground text-background" : "border"}`}
+                  className={`rounded-full px-2.5 py-0.5 font-mono text-xs font-bold uppercase ${ticket.status === "confirmed" ? "bg-foreground text-background" : "border"}`}
                 >
                   {status.label}
                 </span>
               </div>
               <div className="flex flex-col gap-2">
-                <h2 className="font-display text-4xl leading-[0.9] font-black tracking-[-0.045em] text-balance uppercase md:text-4xl">
+                <h2 className="font-display text-4xl leading-[0.9] font-black tracking-[-0.045em] text-balance uppercase md:text-5xl">
                   {ticket.event.name}
                 </h2>
                 <p className="text-muted-foreground">
@@ -134,7 +134,9 @@ export default async function TicketPage({
                     <dt className="font-mono text-xs text-muted-foreground uppercase">
                       {detail.label}
                     </dt>
-                    <dd className="font-medium">{detail.value}</dd>
+                    <dd className="font-display text-lg leading-tight font-bold tracking-[-0.02em]">
+                      {detail.value}
+                    </dd>
                   </div>
                 ))}
               </dl>
@@ -156,7 +158,7 @@ export default async function TicketPage({
                   No QR code
                 </span>
               )}
-              <span className="font-mono text-xs tracking-widest text-muted-foreground">
+              <span className="font-mono text-sm font-bold tracking-widest">
                 {ticket.ticket_code.slice(0, 8)}
               </span>
             </div>
@@ -188,7 +190,7 @@ export default async function TicketPage({
                   <p className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                     Team · {team.members.length} of {ticket.event.team_max}
                   </p>
-                  <h2 className="text-2xl font-bold tracking-tight">
+                  <h2 className="font-display text-3xl leading-[0.9] font-black tracking-[-0.04em] uppercase">
                     {team.name}
                   </h2>
                   {team.members.length < ticket.event.team_min && (
@@ -203,7 +205,7 @@ export default async function TicketPage({
                       key={`${member.name}-${index}`}
                       className="flex justify-between gap-4 border-t py-3 text-sm"
                     >
-                      <span className="font-medium">{member.name}</span>
+                      <span className="font-semibold">{member.name}</span>
                       <span className="text-muted-foreground">
                         {member.role === "leader" ? "Lead" : "Member"}
                         {member.status === "waitlisted" && " · waitlisted"}
@@ -232,7 +234,7 @@ export default async function TicketPage({
             Lost this page later?{" "}
             <Link
               href="/find"
-              className="font-medium text-foreground underline-offset-4 hover:underline"
+              className="font-medium text-foreground underline underline-offset-4 hover:opacity-60"
             >
               Find your ticket
             </Link>{" "}

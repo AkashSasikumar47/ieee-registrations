@@ -587,7 +587,7 @@ export function EventEditor({
               <Button
                 type="button"
                 size="lg"
-                variant="ghost"
+                variant="outline"
                 className="font-mono uppercase"
                 disabled={pending}
                 onClick={() => {

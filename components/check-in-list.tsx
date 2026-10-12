@@ -167,7 +167,7 @@ export function CheckInList({ entries }: { entries: AdminEntry[] }) {
                   </span>
                   <Button
                     size="sm"
-                    variant="ghost"
+                    variant="outline"
                     className="font-mono uppercase"
                     disabled={pending === entry.id}
                     onClick={() => undo(entry)}

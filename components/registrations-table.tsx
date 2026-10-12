@@ -2,7 +2,7 @@
 
 import { Fragment, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Copy, Download, ExternalLink, X } from "lucide-react";
+import { Check, Download, ExternalLink, Pencil, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -37,6 +37,7 @@ import {
 import { AdminCancelButton } from "@/components/admin-cancel-button";
 import { AdminPromoteButton } from "@/components/admin-promote-button";
 import { Choice } from "@/components/choice";
+import { EntryEditor } from "@/components/entry-editor";
 import { useCheckIn } from "@/components/use-check-in";
 import type { AdminEntry } from "@/lib/admin-entries";
 import type { Field } from "@/lib/events";
@@ -74,6 +75,7 @@ export function RegistrationsTable({
   const [view, setView] = useState("list");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [openId, setOpenId] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const search = query.trim().toLowerCase();
@@ -181,11 +183,6 @@ export function RegistrationsTable({
     router.refresh();
   }
 
-  async function copyTicket(code: string) {
-    await navigator.clipboard.writeText(`${window.location.origin}/t/${code}`);
-    toast.success("Ticket link copied.");
-  }
-
   async function toggleOne(entry: AdminEntry) {
     const was = checkedInAt(entry);
     if (await toggle(entry)) {
@@ -289,8 +286,8 @@ export function RegistrationsTable({
             <AlertDialogTrigger asChild>
               <Button
                 size="sm"
-                variant="ghost"
-                className="font-mono text-destructive uppercase"
+                variant="outline"
+                className="border-destructive/40 font-mono text-destructive uppercase hover:bg-destructive/10 hover:text-destructive"
                 disabled={busy}
               >
                 Cancel registrations
@@ -317,7 +314,7 @@ export function RegistrationsTable({
           </AlertDialog>
           <Button
             size="sm"
-            variant="ghost"
+            variant="outline"
             className="ml-auto font-mono uppercase"
             onClick={() => setSelected(new Set())}
           >
@@ -386,7 +383,10 @@ export function RegistrationsTable({
                         selected.has(entry.id) ? "selected" : undefined
                       }
                       className="cursor-pointer"
-                      onClick={() => setOpenId(entry.id)}
+                      onClick={() => {
+                        setOpenId(entry.id);
+                        setEditing(false);
+                      }}
                     >
                       <TableCell
                         className="pl-0"
@@ -474,7 +474,10 @@ export function RegistrationsTable({
       <Sheet
         open={open !== null}
         onOpenChange={(next) => {
-          if (!next) setOpenId(null);
+          if (!next) {
+            setOpenId(null);
+            setEditing(false);
+          }
         }}
       >
         <SheetContent className="w-full overflow-y-auto sm:max-w-md">
@@ -506,13 +509,15 @@ export function RegistrationsTable({
                   {open.status === "waitlisted" && open.role !== "member" && (
                     <AdminPromoteButton id={open.id} />
                   )}
-                  <Button
-                    variant="outline"
-                    className="font-mono uppercase"
-                    onClick={() => copyTicket(open.ticket_code)}
-                  >
-                    <Copy /> Ticket link
-                  </Button>
+                  {!editing && (
+                    <Button
+                      variant="outline"
+                      className="font-mono uppercase"
+                      onClick={() => setEditing(true)}
+                    >
+                      <Pencil /> Edit details
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     className="font-mono uppercase"
@@ -523,36 +528,45 @@ export function RegistrationsTable({
                     </a>
                   </Button>
                 </div>
-                <dl className="flex flex-col border-t">
-                  {[
-                    ["Register number", open.register_number],
-                    ["Email", open.email],
-                    ["Mobile", open.phone],
-                    ...(open.team
-                      ? [
-                          [
-                            "Team",
-                            `${open.team} · ${ROLES[open.role]}${open.short ? " · team short" : ""}`,
-                          ],
-                        ]
-                      : []),
-                    ["Registered", formatDayTime(open.created_at)],
-                    ...fields.map((field) => [
-                      field.label,
-                      open.answers[field.key] || "—",
-                    ]),
-                  ].map(([label, value]) => (
-                    <div
-                      key={label}
-                      className="flex flex-col gap-0.5 border-b py-3"
-                    >
-                      <dt className="font-mono text-xs text-muted-foreground uppercase">
-                        {label}
-                      </dt>
-                      <dd className="text-sm wrap-break-word">{value}</dd>
-                    </div>
-                  ))}
-                </dl>
+                {editing ? (
+                  <EntryEditor
+                    key={open.id}
+                    entry={open}
+                    fields={fields}
+                    onDone={() => setEditing(false)}
+                  />
+                ) : (
+                  <dl className="flex flex-col border-t">
+                    {[
+                      ["Register number", open.register_number],
+                      ["Email", open.email],
+                      ["Mobile", open.phone || "—"],
+                      ...(open.team
+                        ? [
+                            [
+                              "Team",
+                              `${open.team} · ${ROLES[open.role]}${open.short ? " · team short" : ""}`,
+                            ],
+                          ]
+                        : []),
+                      ["Registered", formatDayTime(open.created_at)],
+                      ...fields.map((field) => [
+                        field.label,
+                        open.answers[field.key] || "—",
+                      ]),
+                    ].map(([label, value]) => (
+                      <div
+                        key={label}
+                        className="flex flex-col gap-0.5 border-b py-3"
+                      >
+                        <dt className="font-mono text-xs text-muted-foreground uppercase">
+                          {label}
+                        </dt>
+                        <dd className="text-sm wrap-break-word">{value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
                 {open.status !== "cancelled" && (
                   <div className="self-start">
                     <AdminCancelButton

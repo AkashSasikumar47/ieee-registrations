@@ -14,7 +14,7 @@ export default function NotFound() {
         <p className="font-mono text-xs text-muted-foreground uppercase">
           That page doesn&apos;t exist.
         </p>
-        <Button variant="link" asChild>
+        <Button variant="outline" asChild>
           <Link href="/events">Back to events</Link>
         </Button>
       </main>

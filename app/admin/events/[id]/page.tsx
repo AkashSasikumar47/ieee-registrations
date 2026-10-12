@@ -93,8 +93,9 @@ export default async function EventOverviewPage({
               Latest registrations
             </h2>
             <Button
-              variant="link"
-              className="h-auto p-0 font-mono text-xs uppercase"
+              variant="outline"
+              size="sm"
+              className="font-mono uppercase"
               asChild
             >
               <Link href={`/admin/events/${event.id}/registrations`}>
