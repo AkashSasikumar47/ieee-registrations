@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from "@ieee/ui/components/sonner";
 import { MotionProvider } from "@/components/motion/motion-provider";
 import "./globals.css";
 
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-dvh flex-col antialiased">
         <MotionProvider>{children}</MotionProvider>
+        <Toaster theme="light" position="bottom-center" />
       </body>
     </html>
   );

@@ -8,9 +8,9 @@ import { CancelButton } from "@/components/cancel-button";
 import { CopyButton } from "@/components/copy-button";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { TicketCard } from "@/components/ticket-card";
 import { TicketCheckIn } from "@/components/ticket-check-in";
 import { getAdmin } from "@/lib/auth";
-import { formatDateRange, formatDayTime } from "@/lib/format";
 import { getOrigin } from "@/lib/origin";
 import { qrSvg, ticketUrl } from "@/lib/qr";
 import { getTicket, type TicketStatus } from "@/lib/tickets";
@@ -50,6 +50,11 @@ export default async function TicketPage({
       : await qrSvg(ticketUrl(origin, ticket.ticket_code));
   const status = STATUS[ticket.status];
   const supabase = await createClient();
+  const { data: event } = await supabase
+    .from("ieee_registrations_events")
+    .select("accent, backdrop, kind, format")
+    .eq("slug", ticket.event.slug)
+    .maybeSingle();
   const entry = (await getAdmin(supabase))
     ? (
         await supabase
@@ -65,25 +70,11 @@ export default async function TicketPage({
     ? `${origin}/${ticket.event.slug}/join?code=${team.invite_code}`
     : null;
 
-  const details = [
-    { label: "Name", value: ticket.name },
-    { label: "Register number", value: ticket.register_number },
-    ...(team ? [{ label: "Team", value: team.name }] : []),
-    { label: "Starts", value: formatDayTime(ticket.event.starts_at) },
-  ];
-
   return (
     <div className="flex flex-1 flex-col">
       <SiteHeader />
       <main className="flex-1">
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-gutter py-8 md:py-10">
-          {entry && (
-            <TicketCheckIn
-              entry={entry}
-              confirmed={ticket.status === "confirmed"}
-            />
-          )}
-
           {fresh && ticket.status !== "cancelled" && (
             <div className="flex items-start gap-3">
               <CircleCheck className="mt-1 size-6 shrink-0" />
@@ -101,87 +92,62 @@ export default async function TicketPage({
             </div>
           )}
 
-          <article className="grid overflow-hidden border bg-card md:grid-cols-[1fr_auto]">
-            <div className="flex flex-col gap-8 p-6 md:p-10">
-              <div className="flex items-center justify-between gap-4">
-                <span className="font-mono text-xs tracking-wide text-muted-foreground uppercase">
-                  IEEE SRMIST · Ticket
-                </span>
-                <span
-                  className={`rounded-full px-2.5 py-0.5 font-mono text-xs font-bold uppercase ${ticket.status === "confirmed" ? "bg-foreground text-background" : "border"}`}
-                >
-                  {status.label}
-                </span>
-              </div>
-              <div className="flex flex-col gap-2">
-                <h2 className="font-display text-4xl leading-[0.9] font-black tracking-[-0.045em] text-balance uppercase md:text-5xl">
-                  {ticket.event.name}
-                </h2>
-                <p className="text-muted-foreground">
-                  {formatDateRange(
-                    ticket.event.starts_at,
-                    ticket.event.ends_at,
-                  )}
-                  {ticket.event.venue && ` · ${ticket.event.venue}`}
-                </p>
-              </div>
-              <dl className="grid gap-x-8 sm:grid-cols-2">
-                {details.map((detail) => (
-                  <div
-                    key={detail.label}
-                    className="flex flex-col gap-1 border-t py-4"
-                  >
-                    <dt className="font-mono text-xs text-muted-foreground uppercase">
-                      {detail.label}
-                    </dt>
-                    <dd className="font-display text-lg leading-tight font-bold tracking-[-0.02em]">
-                      {detail.value}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-              <p className="text-sm text-muted-foreground">{status.note}</p>
-            </div>
-
-            <div className="relative flex flex-col items-center justify-center gap-4 border-t border-dashed p-6 md:w-80 md:border-t-0 md:border-l md:p-10">
-              <span className="absolute -top-3 -left-3 size-6 rounded-full border bg-background md:-top-3 md:-left-3" />
-              <span className="absolute -top-3 -right-3 size-6 rounded-full border bg-background md:top-auto md:right-auto md:-bottom-3 md:-left-3" />
-              {qr ? (
-                <div
-                  className="w-full max-w-52 [&_svg]:h-auto [&_svg]:w-full"
-                  role="img"
-                  aria-label="Ticket QR code"
-                  dangerouslySetInnerHTML={{ __html: qr }}
-                />
-              ) : (
-                <span className="text-sm text-muted-foreground">
-                  No QR code
-                </span>
-              )}
-              <span className="font-mono text-sm font-bold tracking-widest">
-                {ticket.ticket_code.slice(0, 8)}
-              </span>
-            </div>
-          </article>
-
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            {qr && (
-              <Button size="lg" asChild>
-                <a
-                  href={`/t/${ticket.ticket_code}/image`}
-                  download="ticket.png"
-                >
-                  <Download /> Download ticket
-                </a>
-              </Button>
-            )}
-            {ticket.status !== "cancelled" && !over && (
-              <CancelButton
-                code={ticket.ticket_code}
-                leader={ticket.role === "leader"}
-              />
-            )}
+          <div className="flex flex-col gap-4">
+            <TicketCard
+              ticket={ticket}
+              qr={qr}
+              accent={event?.accent ?? ""}
+              backdrop={event?.backdrop ?? ""}
+              kind={event?.kind ?? ""}
+              online={event?.format === "online"}
+            />
+            <p className="text-center text-sm text-muted-foreground">
+              {status.note}
+            </p>
           </div>
+
+          {entry ? (
+            <TicketCheckIn
+              entry={entry}
+              confirmed={ticket.status === "confirmed"}
+            >
+              {qr && (
+                <Button size="lg" asChild>
+                  <a
+                    href={`/t/${ticket.ticket_code}/image`}
+                    download={`${ticket.register_number}.png`}
+                  >
+                    <Download /> Download ticket
+                  </a>
+                </Button>
+              )}
+              {ticket.status !== "cancelled" && !over && (
+                <CancelButton
+                  code={ticket.ticket_code}
+                  leader={ticket.role === "leader"}
+                />
+              )}
+            </TicketCheckIn>
+          ) : (
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              {qr && (
+                <Button size="lg" asChild>
+                  <a
+                    href={`/t/${ticket.ticket_code}/image`}
+                    download={`${ticket.register_number}.png`}
+                  >
+                    <Download /> Download ticket
+                  </a>
+                </Button>
+              )}
+              {ticket.status !== "cancelled" && !over && (
+                <CancelButton
+                  code={ticket.ticket_code}
+                  leader={ticket.role === "leader"}
+                />
+              )}
+            </div>
+          )}
 
           {team && ticket.status !== "cancelled" && (
             <section className="grid gap-8 border-t pt-10 md:grid-cols-2 md:gap-12">

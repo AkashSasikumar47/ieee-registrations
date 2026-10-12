@@ -1,33 +1,38 @@
 "use client";
 
 import { Check } from "lucide-react";
-import { Alert, AlertDescription } from "@ieee/ui/components/alert";
+import { toast } from "sonner";
 import { Button } from "@ieee/ui/components/button";
-import { Reveal } from "@/components/motion/reveal";
 import { useCheckIn } from "@/components/use-check-in";
 import { formatDayTime } from "@/lib/format";
 
 export function TicketCheckIn({
   entry,
   confirmed,
+  children,
 }: {
   entry: { id: string; checked_in_at: string | null };
   confirmed: boolean;
+  children: React.ReactNode;
 }) {
-  const { checkedInAt, toggle, pending, error } = useCheckIn();
+  const { checkedInAt, toggle, pending } = useCheckIn();
   const at = checkedInAt(entry);
 
+  async function tap() {
+    if (await toggle(entry)) {
+      toast.success(at ? "Check-in undone." : "Checked in.");
+    } else {
+      toast.error("Couldn't update the check-in.");
+    }
+  }
+
   return (
-    <Reveal
-      trigger="mount"
-      y={12}
-      className={`flex flex-col gap-4 border p-5 md:flex-row md:items-center md:justify-between md:p-6 ${at ? "bg-foreground text-background" : ""}`}
-    >
-      <div className="flex flex-col gap-1">
-        <span className="font-mono text-xs uppercase opacity-70">
+    <div className="flex flex-col gap-4 border p-5 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col">
+        <span className="font-mono text-xs text-muted-foreground uppercase">
           Admin · Check-in
         </span>
-        <span className="font-display text-3xl font-black tracking-[-0.04em] uppercase">
+        <span className="font-display text-xl font-black tracking-[-0.03em] uppercase">
           {!confirmed
             ? "Not confirmed"
             : at
@@ -35,28 +40,26 @@ export function TicketCheckIn({
               : "Not checked in"}
         </span>
       </div>
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      {confirmed && (
-        <Button
-          size="lg"
-          variant={at ? "secondary" : "default"}
-          className="h-14 px-8 font-mono text-base uppercase"
-          disabled={pending === entry.id}
-          onClick={() => toggle(entry)}
-        >
-          {at ? (
-            "Undo check-in"
-          ) : (
-            <>
-              <Check /> Check in
-            </>
-          )}
-        </Button>
-      )}
-    </Reveal>
+      <div className="flex flex-wrap items-center gap-3">
+        {confirmed && (
+          <Button
+            size="lg"
+            variant={at ? "outline" : "default"}
+            className="font-mono uppercase"
+            disabled={pending === entry.id}
+            onClick={tap}
+          >
+            {at ? (
+              "Undo check-in"
+            ) : (
+              <>
+                <Check /> Check in
+              </>
+            )}
+          </Button>
+        )}
+        {children}
+      </div>
+    </div>
   );
 }

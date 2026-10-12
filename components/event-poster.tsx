@@ -1,3 +1,5 @@
+import { isLight } from "@/lib/colour";
+
 const POP = "oklch(from var(--from) 0.86 0.17 calc(h + 150))";
 const SOFT = "color-mix(in oklch, var(--from), var(--background) 55%)";
 
@@ -274,14 +276,6 @@ function pick(seed: string) {
   return hash % SCENES.length;
 }
 
-function light(hex: string) {
-  const [r, g, b] = [1, 3, 5].map((start) => {
-    const value = parseInt(hex.slice(start, start + 2), 16) / 255;
-    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-  }) as [number, number, number];
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.36;
-}
-
 export function EventPoster({
   seed,
   name,
@@ -300,7 +294,7 @@ export function EventPoster({
   const scene = pick(seed);
   const ink = !accent
     ? "text-foreground"
-    : backdrop && light(backdrop)
+    : backdrop && isLight(backdrop)
       ? "text-foreground"
       : "text-background";
   const colours = accent
